@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>我们的旅行</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+  "PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff8f3;
+  color:#4b3b35;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+header{
+  background:linear-gradient(135deg,#f7b38e,#f6c6a8);
+  padding:20px 16px;
+  color:white;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.header-title{
+  font-size:24px;
+  font-weight:700;
+}
+
+.header-date{
+  margin-top:6px;
+  font-size:14px;
+  opacity:.9;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:14px;
+}
+
+/* 主菜单 */
+
+.main-tabs{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:7px;
+  margin-bottom:14px;
+}
+
+.main-tab{
+  border:0;
+  background:white;
+  border-radius:12px;
+  padding:11px 4px;
+  font-size:13px;
+  color:#765e54;
+  box-shadow:0 2px 7px rgba(0,0,0,.06);
+}
+
+.main-tab.active{
+  background:#f3a77f;
+  color:white;
+  font-weight:700;
+}
+
+/* 子菜单 */
+
+.sub-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.sub-tab{
+  border:0;
+  background:#fff;
+  color:#80675c;
+  padding:9px 18px;
+  border-radius:20px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+}
+
+.sub-tab.active{
+  background:#f5b18c;
+  color:white;
+}
+
+/* 工具栏 */
+
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.section-title{
+  font-size:20px;
+  font-weight:700;
+}
+
+.add-btn{
+  border:0;
+  background:#f3a77f;
+  color:white;
+  border-radius:20px;
+  padding:9px 15px;
+  font-weight:600;
+}
+
+/* 卡片 */
+
+.card{
+  background:white;
+  border-radius:16px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+
+.card-title{
+  font-size:17px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.card-info{
+  font-size:14px;
+  line-height:1.8;
+  color:#725f57;
+}
+
+.card-actions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
+
+.edit-btn,
+.delete-btn{
+  border:0;
+  border-radius:9px;
+  padding:7px 12px;
+  font-size:13px;
+}
+
+.edit-btn{
+  background:#fff0e7;
+  color:#d77e52;
+}
+
+.delete-btn{
+  background:#fff0f0;
+  color:#d85c5c;
+}
+
+/* 空状态 */
+
+.empty{
+  background:white;
+  border-radius:16px;
+  padding:35px 20px;
+  text-align:center;
+  color:#a28e85;
+}
+
+/* 弹窗 */
+
+.modal-bg{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.38);
+  z-index:100;
+  padding:15px;
+  overflow:auto;
+}
+
+.modal{
+  max-width:600px;
+  margin:30px auto;
+  background:white;
+  border-radius:20px;
+  padding:20px;
+}
+
+.modal h2{
+  margin-top:0;
+}
+
+.form-group{
+  margin-bottom:13px;
+}
+
+.form-group label{
+  display:block;
+  margin-bottom:6px;
+  font-size:13px;
+  color:#715d54;
+  font-weight:600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+  width:100%;
+  border:1px solid #eadbd3;
+  border-radius:10px;
+  padding:10px 11px;
+  background:#fffdfb;
+  outline:none;
+}
+
+.form-group textarea{
+  min-height:80px;
+  resize:vertical;
+}
+
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+
+.save-btn,
+.cancel-btn{
+  flex:1;
+  border:0;
+  border-radius:11px;
+  padding:11px;
+  font-weight:600;
+}
+
+.save-btn{
+  background:#f3a77f;
+  color:white;
+}
+
+.cancel-btn{
+  background:#f1ebe7;
+  color:#705d55;
+}
+
+/* 费用 */
+
+.expense-amount{
+  font-size:20px;
+  font-weight:700;
+  color:#e28a5c;
+}
+
+.total-box{
+  background:#fff0e6;
+  border-radius:15px;
+  padding:16px;
+  margin-bottom:15px;
+}
+
+.total-label{
+  font-size:13px;
+  color:#856b5e;
+}
+
+.total-number{
+  font-size:28px;
+  font-weight:700;
+  color:#df8254;
+  margin-top:4px;
+}
+
+/* 行程 */
+
+.timeline-date{
+  font-size:15px;
+  font-weight:700;
+  color:#df855b;
+  margin:18px 0 9px;
+}
+
+.itinerary-card{
+  border-left:4px solid #f3ad87;
+}
+
+/* 手机 */
+
+@media(max-width:600px){
+
+  .main-tabs{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .main-tab{
+    padding:10px 3px;
+  }
+
+  .form-row{
+    grid-template-columns:1fr;
+  }
+
+  .toolbar{
+    align-items:center;
+  }
+
+  .modal{
+    margin:10px auto;
+    padding:17px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-title" id="tripTitle">
+    🇭🇰 香港 → 广州 → 成都 → 三江
+  </div>
+
+  <div class="header-date" id="tripDate">
+    2026-11-06 ～ 2026-11-15
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 主菜单 -->
+
+  <div class="main-tabs">
+
+    <button class="main-tab active"
+      onclick="switchMain('itinerary',this)">
+      🗓️ 行程
+    </button>
+
+    <button class="main-tab"
+      onclick="switchMain('hotelTransport',this)">
+      🏨 酒店<br>&交通
+    </button>
+
+    <button class="main-tab"
+      onclick="switchMain('sightShopping',this)">
+      📍 景点<br>&购物
+    </button>
+
+    <button class="main-tab"
+      onclick="switchMain('food',this)">
+      🍜 美食
+    </button>
+
+    <button class="main-tab"
+      onclick="switchMain('expense',this)">
+      💰 费用
+    </button>
+
+  </div>
+
+  <!-- 内容区域 -->
+
+  <div id="content"></div>
+
+</div>
+
+<!-- 弹窗 -->
+
+<div class="modal-bg" id="modalBg">
+
+  <div class="modal">
+
+    <h2 id="modalTitle">新增资料</h2>
+
+    <div id="formContent"></div>
+
+    <div class="modal-actions">
+
+      <button class="cancel-btn"
+        onclick="closeModal()">
+        取消
+      </button>
+
+      <button class="save-btn"
+        onclick="saveData()">
+        保存
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+/* =========================
+   基本资料
+========================= */
+
+const members = [
+  "Lynn",
+  "Vincent",
+  "Esther",
+  "Tong"
+];
+
+let data = JSON.parse(
+  localStorage.getItem("travel_app_v1")
+) || {
+
+  trip:{
+    title:"🇭🇰 香港 → 广州 → 成都 → 三江",
+    start:"2026-11-06",
+    end:"2026-11-15"
+  },
+
+  itinerary:[],
+
+  hotel:[],
+
+  transport:[],
+
+  sight:[],
+
+  shopping:[],
+
+  food:[],
+
+  expenses:[]
+};
+
+let currentMain = "itinerary";
+
+let currentSub = "hotel";
+
+let editId = null;
+
+let currentType = null;
+
+
+/* =========================
+   保存
+========================= */
+
+function saveLocal(){
+
+  localStorage.setItem(
+    "travel_app_v1",
+    JSON.stringify(data)
+  );
+
+}
+
+
+/* =========================
+   ID
+========================= */
+
+function newId(){
+
+  return Date.now().toString() +
+    Math.random().toString(16).slice(2);
+
+}
+
+
+/* =========================
+   菜单
+========================= */
+
+function switchMain(type,button){
+
+  currentMain = type;
+
+  document
+    .querySelectorAll(".main-tab")
+    .forEach(x => x.classList.remove("active"));
+
+  button.classList.add("active");
+
+  render();
+
+}
+
+
+/* =========================
+   Render
+========================= */
+
+function render(){
+
+  const content =
+    document.getElementById("content");
+
+  if(currentMain === "itinerary"){
+
+    renderItinerary(content);
+
+  }
+
+  else if(currentMain === "hotelTransport"){
+
+    renderHotelTransport(content);
+
+  }
+
+  else if(currentMain === "sightShopping"){
+
+    renderSightShopping(content);
+
+  }
+
+  else if(currentMain === "food"){
+
+    renderFood(content);
+
+  }
+
+  else if(currentMain === "expense"){
+
+    renderExpense(content);
+
+  }
+
+}
+
+
+/* =========================
+   工具按钮
+========================= */
+
+function toolbar(title,type){
+
+  return `
+
+    <div class="toolbar">
+
+      <div class="section-title">
+        ${title}
+      </div>
+
+      <button
+        class="add-btn"
+        onclick="openAdd('${type}')">
+        ＋ 添加
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================
+   行程
+========================= */
+
+function renderItinerary(el){
+
+  let html = toolbar(
+    "🗓️ 行程",
+    "itinerary"
+  );
+
+  if(!data.itinerary.length){
+
+    html += `
+      <div class="empty">
+        还没有行程<br><br>
+        点击右上角「＋ 添加」
+      </div>
+    `;
+
+    el.innerHTML = html;
+
+    return;
+  }
+
+  const list =
+    [...data.itinerary]
+    .sort((a,b)=>{
+
+      const aa =
+        (a.date || "") +
+        (a.time || "");
+
+      const bb =
+        (b.date || "") +
+        (b.time || "");
+
+      return aa.localeCompare(bb);
+
+    });
+
+  let lastDate = "";
+
+  list.forEach(item=>{
+
+    if(item.date !== lastDate){
+
+      html += `
+        <div class="timeline-date">
+          ${item.date || "未设日期"}
+        </div>
+      `;
+
+      lastDate = item.date;
+
+    }
+
+    html += cardHtml(
+      item,
+      "itinerary"
+    );
+
+  });
+
+  el.innerHTML = html;
+
+}
+
+
+/* =========================
+   酒店交通
+========================= */
+
+function renderHotelTransport(el){
+
+  let html = `
+
+    <div class="sub-tabs">
+
+      <button
+        class="sub-tab ${
+          currentSub === "hotel"
+          ? "active":""
+        }"
+        onclick="setSub('hotel')">
+        🏨 酒店
+      </button>
+
+      <button
+        class="sub-tab ${
+          currentSub === "transport"
+          ? "active":""
+        }"
+        onclick="setSub('transport')">
+        🚄 交通
+      </button>
+
+    </div>
+
+  `;
+
+  const title =
+    currentSub === "hotel"
+    ? "🏨 酒店"
+    : "🚄 交通";
+
+  html += toolbar(
+    title,
+    currentSub
+  );
+
+  const list =
+    data[currentSub];
+
+  if(!list.length){
+
+    html += `
+      <div class="empty">
+        还没有资料
+      </div>
+    `;
+
+  }
+
+  else{
+
+    list.forEach(item=>{
+
+      html += cardHtml(
+        item,
+        currentSub
+      );
+
+    });
+
+  }
+
+  el.innerHTML = html;
+
+}
+
+
+/* =========================
+   景点购物
+========================= */
+
+function renderSightShopping(el){
+
+  let html = `
+
+    <div class="sub-tabs">
+
+      <button
+        class="sub-tab ${
+          currentSub === "sight"
+          ? "active":""
+        }"
+        onclick="setSub('sight')">
+        📍 景点
+      </button>
+
+      <button
+        class="sub-tab ${
+          currentSub === "shopping"
+          ? "active":""
+        }"
+        onclick="setSub('shopping')">
+        🛍️ 购物
+      </button>
+
+    </div>
+
+  `;
+
+  const title =
+    currentSub === "sight"
+    ? "📍 景点"
+    : "🛍️ 购物";
+
+  html += toolbar(
+    title,
+    currentSub
+  );
+
+  const list =
+    data[currentSub];
+
+  if(!list.length){
+
+    html += `
+      <div class="empty">
+        还没有资料
+      </div>
+    `;
+
+  }
+
+  else{
+
+    list.forEach(item=>{
+
+      html += cardHtml(
+        item,
+        currentSub
+      );
+
+    });
+
+  }
+
+  el.innerHTML = html;
+
+}
+
+
+/* =========================
+   美食
+========================= */
+
+function renderFood(el){
+
+  let html = toolbar(
+    "🍜 美食",
+    "food"
+  );
+
+  if(!data.food.length){
+
+    html += `
+      <div class="empty">
+        还没有美食资料
+      </div>
+    `;
+
+  }
+
+  else{
+
+    data.food.forEach(item=>{
+
+      html += cardHtml(
+        item,
+        "food"
+      );
+
+    });
+
+  }
+
+  el.innerHTML = html;
+
+}
+
+
+/* =========================
+   费用
+========================= */
+
+function renderExpense(el){
+
+  let total = data.expenses.reduce(
+    (sum,x)=>
+      sum + Number(x.amount || 0),
+    0
+  );
+
+  let html = `
+
+    <div class="total-box">
+
+      <div class="total-label">
+        总费用
+      </div>
+
+      <div class="total-number">
+        ¥ ${total.toFixed(2)}
+      </div>
+
+    </div>
+
+  `;
+
+  html += toolbar(
+    "💰 费用",
+    "expense"
+  );
+
+  if(!data.expenses.length){
+
+    html += `
+      <div class="empty">
+        还没有费用
+      </div>
+    `;
+
+  }
+
+  else{
+
+    data.expenses.forEach(item=>{
+
+      html += `
+
+        <div class="card">
+
+          <div class="card-title">
+            ${escapeHtml(item.title)}
+          </div>
+
+          <div class="expense-amount">
+            ¥ ${Number(item.amount || 0).toFixed(2)}
+          </div>
+
+          <div class="card-info">
+
+            ${item.date
+              ? `📅 ${escapeHtml(item.date)}<br>`
+              : ""}
+
+            ${item.payer
+              ? `👤 ${escapeHtml(item.payer)}<br>`
+              : ""}
+
+            ${item.note
+              ? `📝 ${escapeHtml(item.note)}`
+              : ""}
+
+          </div>
+
+          <div class="card-actions">
+
+            <button
+              class="edit-btn"
+              onclick="editData('expense','${item.id}')">
+              编辑
+            </button>
+
+            <button
+              class="delete-btn"
+              onclick="deleteData('expense','${item.id}')">
+              删除
+            </button>
+
+          </div>
+
+        </div>
+
+      `;
+
+    });
+
+  }
+
+  el.innerHTML = html;
+
+}
+
+
+/* =========================
+   子菜单
+========================= */
+
+function setSub(type){
+
+  currentSub = type;
+
+  render();
+
+}
+
+
+/* =========================
+   Card
+========================= */
+
+function cardHtml(item,type){
+
+  let html = `
+
+    <div class="card ${
+      type === "itinerary"
+      ? "itinerary-card":""
+    }">
+
+      <div class="card-title">
+        ${escapeHtml(item.title || "未命名")}
+      </div>
+
+      <div class="card-info">
+
+  `;
+
+  if(item.date){
+
+    html += `
+      📅 ${escapeHtml(item.date)}<br>
+    `;
+
+  }
+
+  if(item.time){
+
+    html += `
+      ⏰ ${escapeHtml(item.time)}<br>
+    `;
+
+  }
+
+  if(item.location){
+
+    html += `
+      📍 ${escapeHtml(item.location)}<br>
+    `;
+
+  }
+
+  if(item.person){
+
+    html += `
+      👤 ${escapeHtml(item.person)}<br>
+    `;
+
+  }
+
+  if(item.url){
+
+    html += `
+      🔗
+      <a
+        href="${escapeAttr(item.url)}"
+        target="_blank">
+        打开链接
+      </a>
+      <br>
+    `;
+
+  }
+
+  if(item.note){
+
+    html += `
+      📝 ${escapeHtml(item.note)}
+    `;
+
+  }
+
+  html += `
+
+      </div>
+
+      <div class="card-actions">
+
+        <button
+          class="edit-btn"
+          onclick="editData('${type}','${item.id}')">
+          编辑
+        </button>
+
+        <button
+          class="delete-btn"
+          onclick="deleteData('${type}','${item.id}')">
+          删除
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+  return html;
+
+}
+
+
+/* =========================
+   新增
+========================= */
+
+function openAdd(type){
+
+  editId = null;
+
+  currentType = type;
+
+  document.getElementById(
+    "modalTitle"
+  ).textContent =
+    "新增" + typeName(type);
+
+  buildForm(type,{});
+
+  document.getElementById(
+    "modalBg"
+  ).style.display = "block";
+
+}
+
+
+/* =========================
+   编辑
+========================= */
+
+function editData(type,id){
+
+  const item =
+    data[type].find(
+      x => x.id === id
+    );
+
+  if(!item) return;
+
+  editId = id;
+
+  currentType = type;
+
+  document.getElementById(
+    "modalTitle"
+  ).textContent =
+    "编辑" + typeName(type);
+
+  buildForm(type,item);
+
+  document.getElementById(
+    "modalBg"
+  ).style.display = "block";
+
+}
+
+
+/* =========================
+   名称
+========================= */
+
+function typeName(type){
+
+  const names = {
+
+    itinerary:"行程",
+
+    hotel:"酒店",
+
+    transport:"交通",
+
+    sight:"景点",
+
+    shopping:"购物",
+
+    food:"美食",
+
+    expense:"费用"
+
+  };
+
+  return names[type] || "";
+
+}
+
+
+/* =========================
+   Form
+========================= */
+
+function buildForm(type,item){
+
+  let html = "";
+
+  if(type === "expense"){
+
+    html = `
+
+      <div class="form-group">
+
+        <label>费用名称</label>
+
+        <input
+          id="f_title"
+          value="${escapeAttr(item.title || "")}"
+          placeholder="例如：熊猫基地门票">
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label>金额</label>
+
+          <input
+            id="f_amount"
+            type="number"
+            step="0.01"
+            value="${item.amount || ""}"
+            placeholder="0">
+
+        </div>
+
+        <div class="form-group">
+
+          <label>日期</label>
+
+          <input
+            id="f_date"
+            type="date"
+            value="${item.date || ""}">
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>付款人</label>
+
+        <select id="f_payer">
+
+          <option value="">请选择</option>
+
+          ${members.map(m=>`
+
+            <option
+              value="${m}"
+              ${item.payer === m ? "selected":""}>
+              ${m}
+            </option>
+
+          `).join("")}
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>备注</label>
+
+        <textarea
+          id="f_note"
+          placeholder="备注">${escapeHtml(item.note || "")}</textarea>
+
+      </div>
+
+    `;
+
+  }
+
+  else{
+
+    html = `
+
+      <div class="form-group">
+
+        <label>名称</label>
+
+        <input
+          id="f_title"
+          value="${escapeAttr(item.title || "")}"
+          placeholder="请输入名称">
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label>日期</label>
+
+          <input
+            id="f_date"
+            type="date"
+            value="${item.date || ""}">
+
+        </div>
+
+        <div class="form-group">
+
+          <label>时间</label>
+
+          <input
+            id="f_time"
+            type="time"
+            value="${item.time || ""}">
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>地点</label>
+
+        <input
+          id="f_location"
+          value="${escapeAttr(item.location || "")}"
+          placeholder="地点 / 地址">
+
+      </div>
+
+      <div class="form-group">
+
+        <label>负责人</label>
+
+        <select id="f_person">
+
+          <option value="">请选择</option>
+
+          ${members.map(m=>`
+
+            <option
+              value="${m}"
+              ${item.person === m ? "selected":""}>
+              ${m}
+            </option>
+
+          `).join("")}
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>链接</label>
+
+        <input
+          id="f_url"
+          value="${escapeAttr(item.url || "")}"
+          placeholder="https://...">
+
+      </div>
+
+      <div class="form-group">
+
+        <label>备注</label>
+
+        <textarea
+          id="f_note"
+          placeholder="备注">${escapeHtml(item.note || "")}</textarea>
+
+      </div>
+
+    `;
+
+  }
+
+  document.getElementById(
+    "formContent"
+  ).innerHTML = html;
+
+}
+
+
+/* =========================
+   保存资料
+========================= */
+
+function saveData(){
+
+  const title =
+    document.getElementById("f_title")
+    .value.trim();
+
+  if(!title){
+
+    alert("请输入名称");
+
+    return;
+
+  }
+
+  let item = {
+
+    id: editId || newId(),
+
+    title:title,
+
+    date:
+      document.getElementById("f_date")
+      ?.value || "",
+
+    time:
+      document.getElementById("f_time")
+      ?.value || "",
+
+    location:
+      document.getElementById("f_location")
+      ?.value.trim() || "",
+
+    person:
+      document.getElementById("f_person")
+      ?.value || "",
+
+    url:
+      document.getElementById("f_url")
+      ?.value.trim() || "",
+
+    note:
+      document.getElementById("f_note")
+      ?.value.trim() || ""
+
+  };
+
+
+  if(currentType === "expense"){
+
+    item = {
+
+      id:editId || newId(),
+
+      title:title,
+
+      amount:
+        Number(
+          document.getElementById("f_amount")
+          .value || 0
+        ),
+
+      date:
+        document.getElementById("f_date")
+        .value || "",
+
+      payer:
+        document.getElementById("f_payer")
+        .value || "",
+
+      note:
+        document.getElementById("f_note")
+        .value.trim() || ""
+
+    };
+
+  }
+
+
+  if(editId){
+
+    const index =
+      data[currentType].findIndex(
+        x => x.id === editId
+      );
+
+    if(index !== -1){
+
+      data[currentType][index] =
+        item;
+
+    }
+
+  }
+
+  else{
+
+    data[currentType].push(item);
+
+  }
+
+
+  saveLocal();
+
+  closeModal();
+
+  render();
+
+}
+
+
+/* =========================
+   删除
+========================= */
+
+function deleteData(type,id){
+
+  if(!confirm("确定要删除吗？")){
+
+    return;
+
+  }
+
+  data[type] =
+    data[type].filter(
+      x => x.id !== id
+    );
+
+
+  /*
+    如果删除的是行程，
+    同时删除关联费用。
+    第一版暂时以 itineraryId
+    作为关联依据。
+  */
+
+  if(type === "itinerary"){
+
+    data.expenses =
+      data.expenses.filter(
+        x => x.itineraryId !== id
+      );
+
+  }
+
+
+  saveLocal();
+
+  render();
+
+}
+
+
+/* =========================
+   关闭
+========================= */
+
+function closeModal(){
+
+  document.getElementById(
+    "modalBg"
+  ).style.display = "none";
+
+}
+
+
+/* =========================
+   安全文字
+========================= */
+
+function escapeHtml(value){
+
+  return String(value || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+function escapeAttr(value){
+
+  return escapeHtml(value);
+
+}
+
+
+/* =========================
+   初始化
+========================= */
+
+function init(){
+
+  document.getElementById(
+    "tripTitle"
+  ).textContent =
+    data.trip.title;
+
+  document.getElementById(
+    "tripDate"
+  ).textContent =
+    data.trip.start +
+    " ～ " +
+    data.trip.end;
+
+  render();
+
+}
+
+init();
+
+</script>
+
+</body>
+</html>
