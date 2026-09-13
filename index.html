@@ -8753,9 +8753,7 @@ async function deleteItem(
   }
 
 
-  saveTrips();
-
-
+  
   viewingId = null;
 
   viewingType = null;
@@ -8764,17 +8762,6 @@ async function deleteItem(
   renderTrip();
 
 }
-
-
-/* =========================================================
-   ★ 第一次加载时，把现有已关联资料同步一次
-   ========================================================= */
-
-syncAllExistingLinks();
-
-saveTrips();
-
-
 </script>
 
 </body>
