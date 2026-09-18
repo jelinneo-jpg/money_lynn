@@ -18,6 +18,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:11px 7px;text-align:left
 label{display:block;color:#666;font-size:13px;margin:11px 0 5px}input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ma{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.light{background:#eee;color:#222}
 .delete{border:0;background:none;cursor:pointer;color:#999}.accountWrap{position:relative}.removeAccount{position:absolute;right:9px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:15px;cursor:pointer;color:#8d6b3e;z-index:2;padding:5px 7px}.removeAccount:hover{background:#f4dfb9}
 @media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:1fr}.wrap{padding:12px}table{font-size:12px}th:nth-child(2),td:nth-child(2){display:none}}
+body.modal-lock{overflow:hidden;position:fixed;width:100%;left:0;right:0}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fff8f0">
@@ -91,10 +92,11 @@ function render(){
 }
 function pick(i){current=names[i];filter="all";document.querySelectorAll(".filter").forEach((x,j)=>x.classList.toggle("on",j==0));render()}
 function sf(f,e){filter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("on"));e.classList.add("on");render()}
+let pageY=0;function lockScroll(){pageY=window.scrollY;document.body.style.top=`-${pageY}px`;document.body.classList.add("modal-lock")}function unlockScroll(){document.body.classList.remove("modal-lock");document.body.style.top="";window.scrollTo(0,pageY)}
 function openM(){date.value=new Date().toISOString().slice(0,10);amount.value="";category.value="";remark.value="";
  currency.value=(current==="妈妈（新加坡）"||current.startsWith("UOB"))?"SGD":"MYR";
- modal.classList.add("show")}
-function closeM(){modal.classList.remove("show")}
+ lockScroll();modal.classList.add("show")}
+function closeM(){modal.classList.remove("show");unlockScroll()}
 function save(){let a=Number(amount.value);if(!date.value||!a){alert("请填写日期和金额");return}data[current].push({date:date.value,type:type.value,currency:currency.value,amount:a,category:category.value||"未分类",remark:remark.value||""});closeM();render()}
 function del(i){if(confirm("确定删除这笔记录吗？")){data[current].splice(i,1);render()}}
 function addAccount(){
