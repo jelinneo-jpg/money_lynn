@@ -56,6 +56,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div class="grid" id="accounts"></div>
 <div class="card"><h2 id="title" style="margin-top:0"></h2>
 <div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b></div></div><div style="margin-top:10px"><button class="btn light" onclick="openStats()">📊 查看收入 / 支出统计</button></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
+<div id="currentMonthLabel" style="margin-top:16px;font-weight:700;color:#806a4d"></div>
 <div class="toolbar"><button class="btn" onclick="openM()">＋ 增加记录</button><div><button class="filter on" onclick="sf('all',this)">全部</button> <button class="filter" onclick="sf('income',this)">收入</button> <button class="filter" onclick="sf('expense',this)">支出</button></div></div>
 <div id="list"></div></div></div>
 <div class="modal" id="modal"><div class="box"><h2 style="margin-top:0">增加记录</h2>
@@ -65,6 +66,13 @@ body.modal-lock .accountWrap{visibility:hidden}
 <label>分类</label><input id="category" placeholder="例如：薪水、吃饭、购物、装修">
 <label>备注（REMARK）</label><input id="remark" placeholder="输入备注">
 <div class="ma"><button class="btn light" onclick="closeM()">取消</button><button class="btn" onclick="save()">保存</button></div></div></div>
+<div class="modal" id="monthDetailModal"><div class="box" style="width:min(780px,100%)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<h2 id="monthDetailTitle" style="margin:0">月份明细</h2>
+<button class="btn light" onclick="closeMonthDetail()">‹ 返回</button>
+</div>
+<div id="monthDetailContent" style="margin-top:14px"></div>
+</div></div>
 <div class="modal" id="statsModal"><div class="box" style="width:min(620px,100%)"><h2 style="margin-top:0">📊 收入 / 支出统计</h2><div id="statsContent"></div><div class="ma"><button class="btn light" onclick="closeStats()">关闭</button></div></div></div>
 <div class="modal" id="settingsModal"><div class="box">
 <h2 style="margin-top:0">⚙️ 设置</h2>
@@ -103,6 +111,7 @@ function totals(n){
 function multi(t,kind){let a=Object.entries(t).filter(([c,v])=>v[kind]!==0).map(([c,v])=>money(v[kind],c));return a.length?a.join(" / "):money(0,"MYR")}
 function multibal(t){let a=Object.entries(t).filter(([c,v])=>v.income-v.expense!==0).map(([c,v])=>money(v.income-v.expense,c));return a.length?a.join(" / "):money(0,"MYR")}
 function render(){
+ let now=new Date(); let ml=document.getElementById("currentMonthLabel"); if(ml)ml.textContent="📅 "+now.getFullYear()+"年"+(now.getMonth()+1)+"月记录";
  document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap"><button class="editAccount" title="编辑账户名称" onclick="event.stopPropagation();editAccount(${i})">✏️</button><button class="removeAccount" title="删除账户" onclick="event.stopPropagation();removeAccount(${i})">✕</button><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="pick(${i})"><div class=icon>${icons[i]||"💰"}</div><div class=name>${esc(n)}</div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
  if(!current || !names.length){
  title.textContent="还没有账户"; income.textContent=money(0,"MYR"); expense.textContent=money(0,"MYR"); balance.textContent=money(0,"MYR");
@@ -110,8 +119,8 @@ function render(){
  localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));return;
  }
  let t=totals(current); title.textContent=current; income.textContent=multi(t,"income");expense.textContent=multi(t,"expense");balance.textContent=multibal(t);
- let rows=data[current].map((r,i)=>({...r,_i:i})).filter(r=>filter=="all"||r.type==filter).sort((a,b)=>b.date.localeCompare(a.date)||b._i-a._i);
- list.innerHTML=rows.length?`<table><thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.date.split("-").reverse().join("/")}</td><td>${r.type=="income"?"收入":"支出"}</td><td>${esc(r.category)}</td><td>${r.currency||"MYR"}</td><td class=${r.type}>${r.type=="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark)}</td><td><button class=delete onclick="del(${r._i})">🗑️</button></td></tr>`).join("")}</tbody></table>`:`<div class=empty>还没有记录<br>点击「＋ 增加记录」开始记账</div>`;
+ let thisMonth=new Date().toISOString().slice(0,7); let rows=data[current].map((r,i)=>({...r,_i:i})).filter(r=>(r.date||"").slice(0,7)===thisMonth).filter(r=>filter=="all"||r.type==filter).sort((a,b)=>b.date.localeCompare(a.date)||b._i-a._i);
+ list.innerHTML=rows.length?`<table><thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.date.split("-").reverse().join("/")}</td><td>${r.type=="income"?"收入":"支出"}</td><td>${esc(r.category)}</td><td>${r.currency||"MYR"}</td><td class=${r.type}>${r.type=="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark)}</td><td><button class=delete onclick="del(${r._i})">🗑️</button></td></tr>`).join("")}</tbody></table>`:`<div class=empty>本月还没有记录<br>旧月份资料可在「📊 查看收入 / 支出统计」查看</div>`;
  localStorage.setItem("zhLedger",JSON.stringify(data));localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
 }
 function pick(i){current=names[i];filter="all";document.querySelectorAll(".filter").forEach((x,j)=>x.classList.toggle("on",j==0));render()}
@@ -197,7 +206,54 @@ function changePassword(){
 const BACKUPKEY="zhLedgerLastBackup";
 const DEFAULT_NAMES=["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"];
 const DEFAULT_ICONS=["💳","💳","👩","👩","👨","👨","🏠"];
-function openStats(){if(!current)return;let all=totals(current),monthly={};(data[current]||[]).forEach(r=>{let m=(r.date||"").slice(0,7);if(!m)return;let c=r.currency||"MYR";monthly[m]??={};monthly[m][c]??={income:0,expense:0};monthly[m][c][r.type]+=Number(r.amount)||0});let months=Object.keys(monthly).sort().reverse();let h=`<div class="stats-total"><div class="stat"><small>总收入</small><b class="income">${multi(all,"income")}</b></div><div class="stat"><small>总支出</small><b class="expense">${multi(all,"expense")}</b></div></div><h3>每月收入 / 支出</h3>`;h+=months.length?months.map(m=>`<div class="stats-month"><div class="stats-month-title">${m.slice(0,4)}年${Number(m.slice(5,7))}月</div><div class="stats-values"><div>收入<br><span class="income">${multi(monthly[m],"income")}</span></div><div>支出<br><span class="expense">${multi(monthly[m],"expense")}</span></div></div></div>`).join(""):`<div class="empty">还没有可以统计的记录</div>`;document.getElementById("statsContent").innerHTML=h;lockScroll();document.getElementById("statsModal").classList.add("show")}function closeStats(){document.getElementById("statsModal").classList.remove("show");unlockScroll()}
+function openStats(){
+ if(!current)return;
+ let all=totals(current),monthly={};
+ (data[current]||[]).forEach(r=>{
+   let m=(r.date||"").slice(0,7);if(!m)return;
+   let c=r.currency||"MYR";
+   monthly[m]??={};monthly[m][c]??={income:0,expense:0};
+   monthly[m][c][r.type]+=Number(r.amount)||0;
+ });
+ let months=Object.keys(monthly).sort().reverse();
+ let h=`<div class="stats-total">
+   <div class="stat"><small>总收入</small><b class="income">${multi(all,"income")}</b></div>
+   <div class="stat"><small>总支出</small><b class="expense">${multi(all,"expense")}</b></div>
+ </div><h3>每月收入 / 支出</h3>`;
+ h+=months.length?months.map(m=>`<div class="stats-month" style="cursor:pointer" onclick="showMonthDetail('${m}')">
+   <div class="stats-month-title" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+     <span>${m.slice(0,4)}年${Number(m.slice(5,7))}月</span>
+     <span style="font-size:13px;color:#9a7b55">查看明细 ›</span>
+   </div>
+   <div class="stats-values">
+     <div>收入<br><span class="income">${multi(monthly[m],"income")}</span></div>
+     <div>支出<br><span class="expense">${multi(monthly[m],"expense")}</span></div>
+   </div>
+ </div>`).join(""):`<div class="empty">还没有可以统计的记录</div>`;
+ document.getElementById("statsContent").innerHTML=h;
+ lockScroll();document.getElementById("statsModal").classList.add("show");
+}
+function showMonthDetail(month){
+ let rows=(data[current]||[]).map((r,i)=>({...r,_i:i}))
+   .filter(r=>(r.date||"").slice(0,7)===month)
+   .sort((a,b)=>b.date.localeCompare(a.date)||b._i-a._i);
+ document.getElementById("monthDetailTitle").textContent=month.slice(0,4)+"年"+Number(month.slice(5,7))+"月 明细";
+ document.getElementById("monthDetailContent").innerHTML=rows.length?`<div style="overflow-x:auto"><table>
+ <thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th></tr></thead>
+ <tbody>${rows.map(r=>`<tr>
+ <td>${(r.date||"").split("-").reverse().join("/")}</td>
+ <td>${r.type==="income"?"收入":"支出"}</td>
+ <td>${esc(r.category||"")}</td><td>${r.currency||"MYR"}</td>
+ <td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td>
+ <td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">这个月份没有记录</div>`;
+ document.getElementById("statsModal").classList.remove("show");
+ document.getElementById("monthDetailModal").classList.add("show");
+}
+function closeMonthDetail(){
+ document.getElementById("monthDetailModal").classList.remove("show");
+ document.getElementById("statsModal").classList.add("show");
+}
+function closeStats(){document.getElementById("statsModal").classList.remove("show");unlockScroll()}
 function openSettings(){updateBackupStatus();document.getElementById("settingsModal").classList.add("show")}
 function closeSettings(){document.getElementById("settingsModal").classList.remove("show")}
 function updateBackupStatus(){
