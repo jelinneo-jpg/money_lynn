@@ -239,15 +239,22 @@ function showMonthDetail(month){
    .sort((a,b)=>b.date.localeCompare(a.date)||b._i-a._i);
  document.getElementById("monthDetailTitle").textContent=month.slice(0,4)+"年"+Number(month.slice(5,7))+"月 明细";
  document.getElementById("monthDetailContent").innerHTML=rows.length?`<div style="overflow-x:auto"><table>
- <thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th></tr></thead>
+ <thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th><th></th></tr></thead>
  <tbody>${rows.map(r=>`<tr>
  <td>${(r.date||"").split("-").reverse().join("/")}</td>
  <td>${r.type==="income"?"收入":"支出"}</td>
  <td>${esc(r.category||"")}</td><td>${r.currency||"MYR"}</td>
  <td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td>
- <td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">这个月份没有记录</div>`;
+ <td>${esc(r.remark||"")}</td><td><button class="delete" onclick="deleteOldRecord(${r._i},'${month}')">🗑️</button></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">这个月份没有记录</div>`;
  document.getElementById("statsModal").classList.remove("show");
  document.getElementById("monthDetailModal").classList.add("show");
+}
+function deleteOldRecord(index,month){
+ if(!confirm("确定删除这笔旧记录吗？\n\n删除后余额和月份统计也会一起更新。"))return;
+ data[current].splice(index,1);
+ localStorage.setItem("zhLedger",JSON.stringify(data));
+ render();
+ showMonthDetail(month);
 }
 function closeMonthDetail(){
  document.getElementById("monthDetailModal").classList.remove("show");
