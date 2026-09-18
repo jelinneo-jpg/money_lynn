@@ -14,7 +14,7 @@
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0;flex-wrap:wrap}
 .btn{border:0;border-radius:10px;padding:11px 15px;background:#b97820;color:#fff;cursor:pointer}.filter{border:0;border-radius:18px;padding:8px 13px;cursor:pointer}.filter.on{background:#b97820;color:#fff}
 table{width:100%;border-collapse:collapse}th,td{padding:11px 7px;text-align:left;border-bottom:1px solid #eee}th{color:#777;font-size:13px}.income{color:#16824b;font-weight:bold}.expense{color:#c43d3d;font-weight:bold}.empty{text-align:center;color:#999;padding:32px}
-.modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;padding:18px}.modal.show{display:flex}.box{background:#fff;border-radius:16px;padding:20px;width:min(450px,100%)}
+.modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:18px;z-index:9999}.modal.show{display:flex}.box{position:relative;z-index:10000;background:#fff;border-radius:16px;padding:20px;width:min(450px,100%)}
 label{display:block;color:#666;font-size:13px;margin:11px 0 5px}input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;font-size:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ma{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.light{background:#eee;color:#222}
 .delete{border:0;background:none;cursor:pointer;color:#999}.accountWrap{position:relative}.removeAccount{position:absolute;right:9px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:15px;cursor:pointer;color:#8d6b3e;z-index:2;padding:5px 7px}.removeAccount:hover{background:#f4dfb9}
 @media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:1fr}.wrap{padding:12px}table{font-size:12px}th:nth-child(2),td:nth-child(2){display:none}}
@@ -27,6 +27,11 @@ body.modal-lock{overflow:hidden;position:fixed;width:100%;left:0;right:0}
 }
 .editAccount{position:absolute;right:43px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:14px;cursor:pointer;color:#8d6b3e;z-index:2;padding:5px 7px}
 .editAccount:hover{background:#f4dfb9}
+
+.modal{z-index:9999!important}
+.modal .box{position:relative;z-index:10000!important}
+.accountWrap,.account,.editAccount,.removeAccount{z-index:auto}
+body.modal-lock .accountWrap{visibility:hidden}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fff8f0">
