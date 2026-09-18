@@ -34,7 +34,7 @@ label{display:block;color:#666;font-size:13px;margin:11px 0 5px}input,select{wid
   </div>
 </div>
 <div class="wrap" id="mainApp" style="display:none">
-<div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h1>📒 我的记账本</h1><div class="sub">收入、支出和余额一目了然</div></div><button class="btn light" onclick="changePassword()">🔑 修改密码</button></div>
+<div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h1>📒 我的记账本</h1><div class="sub">收入、支出和余额一目了然</div></div><button class="btn light" onclick="openSettings()">⚙️ 设置</button></div>
 <div class="toolbar" style="margin-top:4px">
 <div><b>我的账户</b><div style="font-size:13px;color:#806a4d;margin-top:3px">可以自由新增或删除账户</div></div>
 <button class="btn" onclick="addAccount()">＋ 新增账户</button>
@@ -51,6 +51,17 @@ label{display:block;color:#666;font-size:13px;margin:11px 0 5px}input,select{wid
 <label>分类</label><input id="category" placeholder="例如：薪水、吃饭、购物、装修">
 <label>备注（REMARK）</label><input id="remark" placeholder="输入备注">
 <div class="ma"><button class="btn light" onclick="closeM()">取消</button><button class="btn" onclick="save()">保存</button></div></div></div>
+<div class="modal" id="settingsModal"><div class="box">
+<h2 style="margin-top:0">⚙️ 设置</h2>
+<div id="backupStatus" style="font-size:13px;color:#806a4d;background:#fff8e9;border-radius:12px;padding:12px;margin:12px 0"></div>
+<div style="display:grid;gap:10px">
+<button class="btn" style="text-align:left;padding:15px" onclick="exportBackup()">🔐💾 导出加密备份</button>
+<button class="btn" style="text-align:left;padding:15px" onclick="document.getElementById('importFile').click()">📂 导入 / 恢复资料</button>
+<input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
+<button class="btn light" style="text-align:left;padding:15px" onclick="changePassword()">🔐 修改密码</button>
+<button class="btn" style="text-align:left;padding:15px;background:#b54b3a" onclick="resetDefault()">🔄 恢复默认资料</button>
+</div><div class="ma"><button class="btn light" onclick="closeSettings()">关闭</button></div>
+</div></div>
 <script>
 let names=JSON.parse(localStorage.getItem("zhLedgerAccounts")||'["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"]');
 let icons=JSON.parse(localStorage.getItem("zhLedgerIcons")||'["💳","💳","👩","👩","👨","👨","🏠"]');
@@ -127,5 +138,99 @@ function changePassword(){
  localStorage.setItem(PASSKEY,newp);
  alert("密码已修改");
 }
-render();
+
+const BACKUPKEY="zhLedgerLastBackup";
+const DEFAULT_NAMES=["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"];
+const DEFAULT_ICONS=["💳","💳","👩","👩","👨","👨","🏠"];
+function openSettings(){updateBackupStatus();document.getElementById("settingsModal").classList.add("show")}
+function closeSettings(){document.getElementById("settingsModal").classList.remove("show")}
+function updateBackupStatus(){
+ let d=localStorage.getItem(BACKUPKEY);
+ document.getElementById("backupStatus").textContent=d?"上次导出备份："+new Date(d).toLocaleString("zh-CN"):"还没有导出过加密备份。建议定期保存到 iCloud Drive。";
+}
+function bytesToB64(bytes){
+ let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+ return btoa(bin);
+}
+function b64ToBytes(s){
+ let bin=atob(s), out=new Uint8Array(bin.length);
+ for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
+ return out;
+}
+async function deriveBackupKey(password,salt,iterations=250000){
+ let base=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveKey"]);
+ return crypto.subtle.deriveKey(
+  {name:"PBKDF2",salt,iterations,hash:"SHA-256"},base,
+  {name:"AES-GCM",length:256},false,["encrypt","decrypt"]
+ );
+}
+async function exportBackup(){
+ let password=prompt("请输入「备份密码」：\n\n以后换手机恢复资料时，需要输入这个密码。");
+ if(password===null)return;
+ if(password.length<6){alert("为了保护备份，备份密码至少需要 6 位。");return}
+ let again=prompt("请再输入一次备份密码：");
+ if(again!==password){alert("两次输入的备份密码不一样。");return}
+ try{
+  let plain={app:"我的记账本",version:2,exportedAt:new Date().toISOString(),accounts:names,icons:icons,ledger:data};
+  let salt=crypto.getRandomValues(new Uint8Array(16));
+  let iv=crypto.getRandomValues(new Uint8Array(12));
+  let iterations=250000;
+  let key=await deriveBackupKey(password,salt,iterations);
+  let encrypted=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(JSON.stringify(plain)));
+  let pack={
+   app:"我的记账本-加密备份",version:2,
+   encryption:"AES-256-GCM",kdf:"PBKDF2-SHA256",iterations,
+   salt:bytesToB64(salt),iv:bytesToB64(iv),
+   data:bytesToB64(new Uint8Array(encrypted))
+  };
+  let blob=new Blob([JSON.stringify(pack)],{type:"application/json"});
+  let url=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date();
+  let ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  a.href=url;a.download="我的记账本_加密备份_"+ds+".json";
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  localStorage.setItem(BACKUPKEY,new Date().toISOString());updateBackupStatus();
+  alert("🔐 加密备份已建立。\n\n请保存到 iPhone「文件」或 iCloud Drive，并记住你的备份密码。");
+ }catch(e){alert("建立加密备份失败，请确认网页使用 HTTPS（GitHub Pages 支持 HTTPS）。")}
+}
+async function importBackup(ev){
+ let file=ev.target.files[0];ev.target.value="";if(!file)return;
+ try{
+  let pack=JSON.parse(await file.text());
+  let restored;
+  if(pack.app==="我的记账本-加密备份"&&pack.version===2){
+   let password=prompt("请输入这个备份文件的「备份密码」：");
+   if(password===null)return;
+   try{
+    let salt=b64ToBytes(pack.salt),iv=b64ToBytes(pack.iv);
+    let key=await deriveBackupKey(password,salt,Number(pack.iterations)||250000);
+    let decrypted=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,b64ToBytes(pack.data));
+    restored=JSON.parse(new TextDecoder().decode(decrypted));
+   }catch(e){alert("密码不正确，或备份文件已损坏。");return}
+  }else if(pack.app==="我的记账本"&&Array.isArray(pack.accounts)&&pack.ledger){
+   if(!confirm("这是旧版未加密备份。\n\n仍然要导入吗？"))return;
+   restored=pack;
+  }else{throw new Error("invalid")}
+  if(!Array.isArray(restored.accounts)||typeof restored.ledger!=="object")throw new Error("invalid");
+  if(!confirm("导入后会覆盖这台设备目前的账目资料。\n\n确定继续吗？"))return;
+  names=restored.accounts;icons=Array.isArray(restored.icons)?restored.icons:names.map(()=> "💰");data=restored.ledger;
+  names.forEach(n=>data[n]??=[]);current=names[0]||"";
+  localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));
+  localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
+  localStorage.setItem("zhLedger",JSON.stringify(data));
+  render();closeSettings();alert("✅ 资料已成功恢复。");
+ }catch(e){alert("这个文件不是有效的「我的记账本」备份文件。")}
+}
+function resetDefault(){
+ if(!confirm("确定恢复默认资料吗？所有收入和支出都会被删除。"))return;
+ if(!confirm("再次确认：此操作无法撤销。建议先导出备份。"))return;
+ names=[...DEFAULT_NAMES];icons=[...DEFAULT_ICONS];data={};names.forEach(n=>data[n]=[]);current=names[0];
+ localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));localStorage.setItem("zhLedger",JSON.stringify(data));
+ render();closeSettings();alert("已恢复默认资料。");
+}
+function backupReminder(){
+ let last=localStorage.getItem(BACKUPKEY);if(!last)return;
+ let days=(Date.now()-new Date(last).getTime())/86400000;
+ if(days>=30)setTimeout(()=>alert("你已经 "+Math.floor(days)+" 天没有备份了。建议到「⚙️ 设置」导出加密备份到 iCloud Drive。"),600);
+}
+render();backupReminder();
 </script></body></html>
