@@ -61,7 +61,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div id="list"></div></div></div>
 <div class="modal" id="modal"><div class="box"><h2 style="margin-top:0">增加记录</h2>
 <label>日期</label><input id="date" type="date">
-<div class="row"><div><label>类型</label><select id="type"><option value="income">收入</option><option value="expense">支出</option></select></div><div><label>币种（CURRENCY）</label><select id="currency"><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="USD">🇺🇸 USD</option><option value="CNY">🇨🇳 CNY</option></select></div></div>
+<div class="row"><div><label>类型</label><select id="type"><option value="income">收入</option><option value="expense">支出</option></select></div><div><label>币种（CURRENCY）</label><select id="currency"><option value="" selected disabled>请选择币种</option><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="CNY">🇨🇳 CNY</option></select></div></div>
 <label>金额</label><input id="amount" type="number" min="0" step=".01" placeholder="0.00">
 <label>分类</label><input id="category" placeholder="例如：薪水、吃饭、购物、装修">
 <label>备注（REMARK）</label><input id="remark" placeholder="输入备注">
@@ -127,10 +127,10 @@ function pick(i){current=names[i];filter="all";document.querySelectorAll(".filte
 function sf(f,e){filter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("on"));e.classList.add("on");render()}
 let pageY=0;function lockScroll(){pageY=window.scrollY;document.body.style.top=`-${pageY}px`;document.body.classList.add("modal-lock")}function unlockScroll(){document.body.classList.remove("modal-lock");document.body.style.top="";window.scrollTo(0,pageY)}
 function openM(){date.value=new Date().toISOString().slice(0,10);amount.value="";category.value="";remark.value="";
- currency.value=(current==="妈妈（新加坡）"||current.startsWith("UOB"))?"SGD":"MYR";
+ currency.value="";
  lockScroll();modal.classList.add("show")}
 function closeM(){modal.classList.remove("show");unlockScroll()}
-function save(){let a=Number(amount.value);if(!date.value||!a){alert("请填写日期和金额");return}data[current].push({date:date.value,type:type.value,currency:currency.value,amount:a,category:category.value||"未分类",remark:remark.value||""});closeM();render()}
+function save(){let a=Number(amount.value);if(!date.value||!a){alert("请填写日期和金额");return}if(!currency.value){alert("请选择币种（CURRENCY）");return}data[current].push({date:date.value,type:type.value,currency:currency.value,amount:a,category:category.value||"未分类",remark:remark.value||""});closeM();render()}
 function del(i){if(confirm("确定删除这笔记录吗？")){data[current].splice(i,1);render()}}
 function addAccount(){
  let n=prompt("请输入新账户名称：\n例如：爸爸、旅行基金、房子");
