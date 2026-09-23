@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的记账本</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#fff8e7 0%,#fff1c9 48%,#f7dfaa 100%);color:#3b3024;min-height:100vh}
+.wrap{max-width:950px;margin:auto;padding:20px}h1{margin:0 0 5px;font-size:26px}.sub{color:#777;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.account{border:0;background:rgba(255,255,255,.94);border-radius:18px;padding:18px;text-align:left;box-shadow:0 8px 25px #00000010;cursor:pointer;transition:.18s transform,.18s box-shadow}.account:hover{transform:translateY(-2px);box-shadow:0 12px 30px #00000018}
+.account.active{outline:2px solid #c68a2b;background:#fffaf0}.icon{font-size:24px}.name{font-weight:700;font-size:16px;margin-top:7px}.abal{color:#666;margin-top:5px}
+.card{background:rgba(255,255,255,.96);border-radius:20px;padding:20px;box-shadow:0 10px 32px #00000010}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:linear-gradient(135deg,#fffaf0,#fff2d4);border-radius:15px;padding:15px}.stat small{color:#777}.stat b{display:block;font-size:20px;margin-top:5px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:#b97820;color:#fff;cursor:pointer}.filter{border:0;border-radius:18px;padding:8px 13px;cursor:pointer}.filter.on{background:#b97820;color:#fff}
+table{width:100%;border-collapse:collapse}th,td{padding:11px 7px;text-align:left;border-bottom:1px solid #eee}th{color:#777;font-size:13px}.income{color:#16824b;font-weight:bold}.expense{color:#c43d3d;font-weight:bold}.empty{text-align:center;color:#999;padding:32px}
+.modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:18px;z-index:9999}.modal.show{display:flex}.box{position:relative;z-index:10000;background:#fff;border-radius:16px;padding:20px;width:min(450px,100%)}
+label{display:block;color:#666;font-size:13px;margin:11px 0 5px}input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;font-size:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ma{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.light{background:#eee;color:#222}
+.delete{border:0;background:none;cursor:pointer;color:#999}.accountWrap{position:relative}.removeAccount{position:absolute;right:9px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:15px;cursor:pointer;color:#8d6b3e;z-index:2;padding:5px 7px}.removeAccount:hover{background:#f4dfb9}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:1fr}.wrap{padding:12px}table{font-size:12px}th:nth-child(2),td:nth-child(2){display:none}}
+body.modal-lock{overflow:hidden;position:fixed;width:100%;left:0;right:0}
+
+@media(max-width:650px){
+ input,select,textarea{font-size:16px!important}
+ .modal{align-items:flex-start;padding-top:max(18px,env(safe-area-inset-top));overflow:hidden}
+ .box{max-height:calc(100dvh - 36px - env(safe-area-inset-top));overflow-y:auto;-webkit-overflow-scrolling:touch}
+}
+.editAccount{position:absolute;right:43px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:14px;cursor:pointer;color:#8d6b3e;z-index:2;padding:5px 7px}
+.editAccount:hover{background:#f4dfb9}
+
+.modal{z-index:9999!important}
+.modal .box{position:relative;z-index:10000!important}
+.accountWrap,.account,.editAccount,.removeAccount{z-index:auto}
+body.modal-lock .accountWrap{visibility:hidden}
+.stats-total,.stats-values{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats-total{margin-bottom:16px}.stats-month{border:1px solid #f0dfbf;border-radius:14px;padding:13px;margin:9px 0;background:#fffaf0}.stats-month-title{font-weight:700;margin-bottom:8px}.stats-values div{background:#fff;padding:9px;border-radius:10px}@media(max-width:420px){.stats-total,.stats-values{grid-template-columns:1fr}}</style></head>
+<body>
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fff8f0">
+  <div style="width:min(570px,94vw);background:white;border-radius:36px;padding:65px 36px;text-align:center;box-shadow:0 18px 55px #8b5d3018">
+    <img src="login-bg.png" alt="幸运熊猫" style="display:block;width:min(100%,360px);height:auto;max-height:42vh;object-fit:contain;margin:0 auto 18px;border-radius:24px">
+    <h1 style="font-size:36px;margin:10px 0 18px;color:#4b2b16">我的记账本</h1>
+    <div style="font-size:19px;color:#b07a5d;margin-bottom:30px">请输入密码才能进入 💗</div>
+    <input id="loginPassword" type="password" inputmode="numeric" placeholder="请输入密码"
+      style="width:100%;padding:20px;border:2px solid #f0a06c;border-radius:20px;background:#edf4ff;font-size:22px;text-align:center;letter-spacing:8px;outline:none"
+      onkeydown="if(event.key==='Enter')unlockApp()">
+    <button onclick="unlockApp()" style="width:100%;margin-top:18px;border:0;border-radius:18px;padding:18px;background:#ea9864;color:white;font-size:20px;font-weight:bold;cursor:pointer">进入记账本 💗</button>
+    <div id="loginError" style="height:24px;margin-top:12px;color:#c34c4c"></div>
+    <div style="margin-top:10px;font-size:13px;color:#aaa">首次使用密码：123456<br>进入后可在页面上修改密码</div>
+  </div>
+</div>
+<div class="wrap" id="mainApp" style="display:none">
+<div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h1>📒 我的记账本</h1><div class="sub">收入、支出和余额一目了然</div></div><button class="btn light" onclick="openSettings()">⚙️ 设置</button></div>
+<div class="toolbar" style="margin-top:4px">
+<div><b>我的账户</b><div style="font-size:13px;color:#806a4d;margin-top:3px">可以自由新增或删除账户</div></div>
+<button class="btn" onclick="addAccount()">＋ 新增账户</button>
+</div>
+<div class="grid" id="accounts"></div>
+<div class="card"><h2 id="title" style="margin-top:0"></h2>
+<div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b></div></div><div style="margin-top:10px"><button class="btn light" onclick="openStats()">📊 查看收入 / 支出统计</button></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
+<div id="currentMonthLabel" style="margin-top:16px;font-weight:700;color:#806a4d"></div>
+<div class="toolbar"><button class="btn" onclick="openM()">＋ 增加记录</button><div><button class="filter on" onclick="sf('all',this)">全部</button> <button class="filter" onclick="sf('income',this)">收入</button> <button class="filter" onclick="sf('expense',this)">支出</button></div></div>
+<div id="list"></div></div></div>
+<div class="modal" id="modal"><div class="box"><h2 style="margin-top:0">增加记录</h2>
+<label>日期</label><input id="date" type="date">
+<div class="row"><div><label>类型</label><select id="type"><option value="income">收入</option><option value="expense">支出</option></select></div><div><label>币种（CURRENCY）</label><select id="currency"><option value="" selected disabled>请选择币种</option><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="CNY">🇨🇳 CNY</option></select></div></div>
+<label>金额</label><input id="amount" type="number" min="0" step=".01" placeholder="0.00">
+<label>分类</label><input id="category" placeholder="例如：薪水、吃饭、购物、装修">
+<label>备注（REMARK）</label><input id="remark" placeholder="输入备注">
+<div class="ma"><button class="btn light" onclick="closeM()">取消</button><button class="btn" onclick="save()">保存</button></div></div></div>
+<div class="modal" id="monthDetailModal"><div class="box" style="width:min(780px,100%)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<h2 id="monthDetailTitle" style="margin:0">月份明细</h2>
+<button class="btn light" onclick="closeMonthDetail()">‹ 返回</button>
+</div>
+<div id="monthDetailContent" style="margin-top:14px"></div>
+</div></div>
+<div class="modal" id="statsModal"><div class="box" style="width:min(620px,100%)"><h2 style="margin-top:0">📊 收入 / 支出统计</h2><div id="statsContent"></div><div class="ma"><button class="btn light" onclick="closeStats()">关闭</button></div></div></div>
+<div class="modal" id="settingsModal"><div class="box">
+<h2 style="margin-top:0">⚙️ 设置</h2>
+<div id="backupStatus" style="font-size:13px;color:#806a4d;background:#fff8e9;border-radius:12px;padding:12px;margin:12px 0"></div>
+<div style="display:grid;gap:10px">
+<button class="btn" style="text-align:left;padding:15px" onclick="exportBackup()">🔐💾 导出加密备份</button>
+<button class="btn" style="text-align:left;padding:15px" onclick="document.getElementById('importFile').click()">📂 导入 / 恢复资料</button>
+<input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
+<button class="btn light" style="text-align:left;padding:15px" onclick="changePassword()">🔐 修改密码</button>
+<button class="btn" style="text-align:left;padding:15px;background:#b54b3a" onclick="resetDefault()">🔄 恢复默认资料</button>
+</div><div class="ma"><button class="btn light" onclick="closeSettings()">关闭</button></div>
+</div></div>
+
+<div class="modal" id="editAccountModal"><div class="box">
+<h2 style="margin-top:0">✏️ 编辑账户名称</h2>
+<label>账户名称</label>
+<input id="editAccountName" type="text" autocomplete="off">
+<div class="ma">
+<button class="btn light" onclick="closeEditAccount()">取消</button>
+<button class="btn" onclick="saveAccountName()">保存</button>
+</div>
+</div></div>
+<script>
+let names=JSON.parse(localStorage.getItem("zhLedgerAccounts")||'["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"]');
+let icons=JSON.parse(localStorage.getItem("zhLedgerIcons")||'["💳","💳","👩","👩","👨","👨","🏠"]');
+let data=JSON.parse(localStorage.getItem("zhLedger")||"{}"); names.forEach(n=>data[n]??=[]);
+let current=names[0]||"", filter="all";
+const symbols={MYR:"RM",SGD:"S$",USD:"US$",CNY:"¥"};
+const money=(n,c="MYR")=>(symbols[c]||c)+" "+Number(n).toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function totals(n){
+ let out={};
+ data[n].forEach(x=>{let c=x.currency||"MYR";out[c]??={income:0,expense:0};out[c][x.type]+=x.amount});
+ return out;
+}
+function multi(t,kind){let a=Object.entries(t).filter(([c,v])=>v[kind]!==0).map(([c,v])=>money(v[kind],c));return a.length?a.join(" / "):money(0,"MYR")}
+function multibal(t){let a=Object.entries(t).filter(([c,v])=>v.income-v.expense!==0).map(([c,v])=>money(v.income-v.expense,c));return a.length?a.join(" / "):money(0,"MYR")}
+function render(){
+ let now=new Date(); let ml=document.getElementById("currentMonthLabel"); if(ml)ml.textContent="📅 "+now.getFullYear()+"年"+(now.getMonth()+1)+"月记录";
+ document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap"><button class="editAccount" title="编辑账户名称" onclick="event.stopPropagation();editAccount(${i})">✏️</button><button class="removeAccount" title="删除账户" onclick="event.stopPropagation();removeAccount(${i})">✕</button><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="pick(${i})"><div class=icon>${icons[i]||"💰"}</div><div class=name>${esc(n)}</div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
+ if(!current || !names.length){
+ title.textContent="还没有账户"; income.textContent=money(0,"MYR"); expense.textContent=money(0,"MYR"); balance.textContent=money(0,"MYR");
+ list.innerHTML='<div class=empty>请先点击「＋ 新增账户」</div>';
+ localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));return;
+ }
+ let t=totals(current); title.textContent=current; income.textContent=multi(t,"income");expense.textContent=multi(t,"expense");balance.textContent=multibal(t);
+ let thisMonth=new Date().toISOString().slice(0,7); let rows=data[current].map((r,i)=>({...r,_i:i})).filter(r=>(r.date||"").slice(0,7)===thisMonth).filter(r=>filter=="all"||r.type==filter).sort((a,b)=>b.date.localeCompare(a.date)||b._i-a._i);
+ list.innerHTML=rows.length?`<table><thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.date.split("-").reverse().join("/")}</td><td>${r.type=="income"?"收入":"支出"}</td><td>${esc(r.category)}</td><td>${r.currency||"MYR"}</td><td class=${r.type}>${r.type=="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark)}</td><td><button class=delete onclick="del(${r._i})">🗑️</button></td></tr>`).join("")}</tbody></table>`:`<div class=empty>本月还没有记录<br>旧月份资料可在「📊 查看收入 / 支出统计」查看</div>`;
+ localStorage.setItem("zhLedger",JSON.stringify(data));localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
+}
+function pick(i){current=names[i];filter="all";document.querySelectorAll(".filter").forEach((x,j)=>x.classList.toggle("on",j==0));render()}
+function sf(f,e){filter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("on"));e.classList.add("on");render()}
+let pageY=0;function lockScroll(){pageY=window.scrollY;document.body.style.top=`-${pageY}px`;document.body.classList.add("modal-lock")}function unlockScroll(){document.body.classList.remove("modal-lock");document.body.style.top="";window.scrollTo(0,pageY)}
+function openM(){date.value=new Date().toISOString().slice(0,10);amount.value="";category.value="";remark.value="";
+ currency.value="";
+ lockScroll();modal.classList.add("show")}
+function closeM(){modal.classList.remove("show");unlockScroll()}
+function save(){let a=Number(amount.value);if(!date.value||!a){alert("请填写日期和金额");return}if(!currency.value){alert("请选择币种（CURRENCY）");return}data[current].push({date:date.value,type:type.value,currency:currency.value,amount:a,category:category.value||"未分类",remark:remark.value||""});closeM();render()}
+function del(i){if(confirm("确定删除这笔记录吗？")){data[current].splice(i,1);render()}}
+function addAccount(){
+ let n=prompt("请输入新账户名称：\n例如：爸爸、旅行基金、房子");
+ if(!n)return;n=n.trim();if(!n)return;
+ if(names.includes(n)){alert("这个账户已经存在");return}
+ names.push(n);icons.push("💰");data[n]=[];current=n;render();
+}
+let editingAccountIndex=-1;
+function editAccount(i){
+ editingAccountIndex=i;
+ document.getElementById("editAccountName").value=names[i]||"";
+ lockScroll();
+ document.getElementById("editAccountModal").classList.add("show");
+ setTimeout(()=>document.getElementById("editAccountName").focus(),120);
+}
+function closeEditAccount(){
+ document.getElementById("editAccountModal").classList.remove("show");
+ editingAccountIndex=-1;
+ unlockScroll();
+}
+function saveAccountName(){
+ if(editingAccountIndex<0)return;
+ let oldName=names[editingAccountIndex];
+ let newName=document.getElementById("editAccountName").value.trim();
+ if(!newName){alert("请输入账户名称");return}
+ if(newName===oldName){closeEditAccount();return}
+ if(names.includes(newName)){alert("这个账户名称已经存在");return}
+ data[newName]=data[oldName]||[];
+ delete data[oldName];
+ names[editingAccountIndex]=newName;
+ if(current===oldName)current=newName;
+ document.getElementById("editAccountModal").classList.remove("show");
+ editingAccountIndex=-1;
+ unlockScroll();
+ render();
+}
+function removeAccount(i){
+ let n=names[i];
+ if(!confirm(`确定删除「${n}」吗？\n\n这个账户里面的所有收入和支出记录也会一起删除。`))return;
+ delete data[n];names.splice(i,1);icons.splice(i,1);
+ if(current===n)current=names[0]||"";
+ render();
+}
+
+const PASSKEY="zhLedgerPassword";
+if(!localStorage.getItem(PASSKEY)) localStorage.setItem(PASSKEY,"123456");
+function unlockApp(){
+ const entered=document.getElementById("loginPassword").value;
+ if(entered===localStorage.getItem(PASSKEY)){
+   document.getElementById("loginScreen").style.display="none";
+   document.getElementById("mainApp").style.display="block";
+   document.getElementById("loginError").textContent="";
+ }else{
+   document.getElementById("loginError").textContent="密码不正确，请再试一次";
+   document.getElementById("loginPassword").value="";
+   document.getElementById("loginPassword").focus();
+ }
+}
+function changePassword(){
+ let oldp=prompt("请输入目前密码：");
+ if(oldp===null)return;
+ if(oldp!==localStorage.getItem(PASSKEY)){alert("目前密码不正确");return}
+ let newp=prompt("请输入新密码（至少4位）：");
+ if(newp===null)return;
+ newp=newp.trim();
+ if(newp.length<4){alert("新密码至少需要4位");return}
+ let confirmP=prompt("请再输入一次新密码：");
+ if(confirmP!==newp){alert("两次输入的新密码不一样");return}
+ localStorage.setItem(PASSKEY,newp);
+ alert("密码已修改");
+}
+
+const BACKUPKEY="zhLedgerLastBackup";
+const DEFAULT_NAMES=["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"];
+const DEFAULT_ICONS=["💳","💳","👩","👩","👨","👨","🏠"];
+function openStats(){
+ if(!current)return;
+ let all=totals(current),monthly={};
+ (data[current]||[]).forEach(r=>{
+   let m=(r.date||"").slice(0,7);if(!m)return;
+   let c=r.currency||"MYR";
+   monthly[m]??={};monthly[m][c]??={income:0,expense:0};
+   monthly[m][c][r.type]+=Number(r.amount)||0;
+ });
+ let months=Object.keys(monthly).sort().reverse();
+ let h=`<div class="stats-total">
+   <div class="stat"><small>总收入</small><b class="income">${multi(all,"income")}</b></div>
+   <div class="stat"><small>总支出</small><b class="expense">${multi(all,"expense")}</b></div>
+ </div><h3>每月收入 / 支出</h3>`;
+ h+=months.length?months.map(m=>`<div class="stats-month" style="cursor:pointer" onclick="showMonthDetail('${m}')">
+   <div class="stats-month-title" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+     <span>${m.slice(0,4)}年${Number(m.slice(5,7))}月</span>
+     <span style="font-size:13px;color:#9a7b55">查看明细 ›</span>
+   </div>
+   <div class="stats-values">
+     <div>收入<br><span class="income">${multi(monthly[m],"income")}</span></div>
+     <div>支出<br><span class="expense">${multi(monthly[m],"expense")}</span></div>
+   </div>
+ </div>`).join(""):`<div class="empty">还没有可以统计的记录</div>`;
+ document.getElementById("statsContent").innerHTML=h;
+ lockScroll();document.getElementById("statsModal").classList.add("show");
+}
+function showMonthDetail(month){
+ let rows=(data[current]||[]).map((r,i)=>({...r,_i:i}))
+   .filter(r=>(r.date||"").slice(0,7)===month)
+   .sort((a,b)=>b.date.localeCompare(a.date)||b._i-a._i);
+ document.getElementById("monthDetailTitle").textContent=month.slice(0,4)+"年"+Number(month.slice(5,7))+"月 明细";
+ document.getElementById("monthDetailContent").innerHTML=rows.length?`<div style="overflow-x:auto"><table>
+ <thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th><th></th></tr></thead>
+ <tbody>${rows.map(r=>`<tr>
+ <td>${(r.date||"").split("-").reverse().join("/")}</td>
+ <td>${r.type==="income"?"收入":"支出"}</td>
+ <td>${esc(r.category||"")}</td><td>${r.currency||"MYR"}</td>
+ <td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td>
+ <td>${esc(r.remark||"")}</td><td><button class="delete" onclick="deleteOldRecord(${r._i},'${month}')">🗑️</button></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">这个月份没有记录</div>`;
+ document.getElementById("statsModal").classList.remove("show");
+ document.getElementById("monthDetailModal").classList.add("show");
+}
+function deleteOldRecord(index,month){
+ if(!confirm("确定删除这笔旧记录吗？\n\n删除后余额和月份统计也会一起更新。"))return;
+ data[current].splice(index,1);
+ localStorage.setItem("zhLedger",JSON.stringify(data));
+ render();
+ showMonthDetail(month);
+}
+function closeMonthDetail(){
+ document.getElementById("monthDetailModal").classList.remove("show");
+ document.getElementById("statsModal").classList.add("show");
+}
+function closeStats(){document.getElementById("statsModal").classList.remove("show");unlockScroll()}
+function openSettings(){updateBackupStatus();document.getElementById("settingsModal").classList.add("show")}
+function closeSettings(){document.getElementById("settingsModal").classList.remove("show")}
+function updateBackupStatus(){
+ let d=localStorage.getItem(BACKUPKEY);
+ document.getElementById("backupStatus").textContent=d?"上次导出备份："+new Date(d).toLocaleString("zh-CN"):"还没有导出过加密备份。建议定期保存到 iCloud Drive。";
+}
+function bytesToB64(bytes){
+ let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+ return btoa(bin);
+}
+function b64ToBytes(s){
+ let bin=atob(s), out=new Uint8Array(bin.length);
+ for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
+ return out;
+}
+async function deriveBackupKey(password,salt,iterations=250000){
+ let base=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveKey"]);
+ return crypto.subtle.deriveKey(
+  {name:"PBKDF2",salt,iterations,hash:"SHA-256"},base,
+  {name:"AES-GCM",length:256},false,["encrypt","decrypt"]
+ );
+}
+async function exportBackup(){
+ let password=prompt("请输入「备份密码」：\n\n以后换手机恢复资料时，需要输入这个密码。");
+ if(password===null)return;
+ if(password.length<6){alert("为了保护备份，备份密码至少需要 6 位。");return}
+ let again=prompt("请再输入一次备份密码：");
+ if(again!==password){alert("两次输入的备份密码不一样。");return}
+ try{
+  let plain={app:"我的记账本",version:2,exportedAt:new Date().toISOString(),accounts:names,icons:icons,ledger:data};
+  let salt=crypto.getRandomValues(new Uint8Array(16));
+  let iv=crypto.getRandomValues(new Uint8Array(12));
+  let iterations=250000;
+  let key=await deriveBackupKey(password,salt,iterations);
+  let encrypted=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(JSON.stringify(plain)));
+  let pack={
+   app:"我的记账本-加密备份",version:2,
+   encryption:"AES-256-GCM",kdf:"PBKDF2-SHA256",iterations,
+   salt:bytesToB64(salt),iv:bytesToB64(iv),
+   data:bytesToB64(new Uint8Array(encrypted))
+  };
+  let blob=new Blob([JSON.stringify(pack)],{type:"application/json"});
+  let url=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date();
+  let ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  a.href=url;a.download="我的记账本_加密备份_"+ds+".json";
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  localStorage.setItem(BACKUPKEY,new Date().toISOString());updateBackupStatus();
+  alert("🔐 加密备份已建立。\n\n请保存到 iPhone「文件」或 iCloud Drive，并记住你的备份密码。");
+ }catch(e){alert("建立加密备份失败，请确认网页使用 HTTPS（GitHub Pages 支持 HTTPS）。")}
+}
+async function importBackup(ev){
+ let file=ev.target.files[0];ev.target.value="";if(!file)return;
+ try{
+  let pack=JSON.parse(await file.text());
+  let restored;
+  if(pack.app==="我的记账本-加密备份"&&pack.version===2){
+   let password=prompt("请输入这个备份文件的「备份密码」：");
+   if(password===null)return;
+   try{
+    let salt=b64ToBytes(pack.salt),iv=b64ToBytes(pack.iv);
+    let key=await deriveBackupKey(password,salt,Number(pack.iterations)||250000);
+    let decrypted=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,b64ToBytes(pack.data));
+    restored=JSON.parse(new TextDecoder().decode(decrypted));
+   }catch(e){alert("密码不正确，或备份文件已损坏。");return}
+  }else if(pack.app==="我的记账本"&&Array.isArray(pack.accounts)&&pack.ledger){
+   if(!confirm("这是旧版未加密备份。\n\n仍然要导入吗？"))return;
+   restored=pack;
+  }else{throw new Error("invalid")}
+  if(!Array.isArray(restored.accounts)||typeof restored.ledger!=="object")throw new Error("invalid");
+  if(!confirm("导入后会覆盖这台设备目前的账目资料。\n\n确定继续吗？"))return;
+  names=restored.accounts;icons=Array.isArray(restored.icons)?restored.icons:names.map(()=> "💰");data=restored.ledger;
+  names.forEach(n=>data[n]??=[]);current=names[0]||"";
+  localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));
+  localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
+  localStorage.setItem("zhLedger",JSON.stringify(data));
+  render();closeSettings();alert("✅ 资料已成功恢复。");
+ }catch(e){alert("这个文件不是有效的「我的记账本」备份文件。")}
+}
+function resetDefault(){
+ if(!confirm("确定恢复默认资料吗？所有收入和支出都会被删除。"))return;
+ if(!confirm("再次确认：此操作无法撤销。建议先导出备份。"))return;
+ names=[...DEFAULT_NAMES];icons=[...DEFAULT_ICONS];data={};names.forEach(n=>data[n]=[]);current=names[0];
+ localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));localStorage.setItem("zhLedger",JSON.stringify(data));
+ render();closeSettings();alert("已恢复默认资料。");
+}
+function backupReminder(){
+ let last=localStorage.getItem(BACKUPKEY);if(!last)return;
+ let days=(Date.now()-new Date(last).getTime())/86400000;
+ if(days>=30)setTimeout(()=>alert("你已经 "+Math.floor(days)+" 天没有备份了。建议到「⚙️ 设置」导出加密备份到 iCloud Drive。"),600);
+}
+render();backupReminder();
+</script></body></html>
