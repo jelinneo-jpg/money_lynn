@@ -7,19 +7,19 @@
 <link rel="icon" type="image/jpeg" href="ledger-icon.jpg">
 <link rel="preload" as="image" href="login-bg.jpg">
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#fff8e7 0%,#fff1c9 48%,#f7dfaa 100%);color:#3b3024;min-height:100vh}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#fffaf7;color:#4b3428;min-height:100vh}
 .wrap{max-width:950px;margin:auto;padding:20px}h1{margin:0 0 5px;font-size:26px}.sub{color:#777;margin-bottom:18px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
-.account{border:0;background:rgba(255,255,255,.94);border-radius:18px;padding:18px;text-align:left;box-shadow:0 8px 25px #00000010;cursor:pointer;transition:.18s transform,.18s box-shadow}.account:hover{transform:translateY(-2px);box-shadow:0 12px 30px #00000018}
-.account.active{outline:2px solid #c68a2b;background:#fffaf0}.icon{font-size:24px}.name{font-weight:700;font-size:16px;margin-top:7px}.abal{color:#666;margin-top:5px}
-.card{background:rgba(255,255,255,.96);border-radius:20px;padding:20px;box-shadow:0 10px 32px #00000010}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.stat{background:linear-gradient(135deg,#fffaf0,#fff2d4);border-radius:15px;padding:15px}.stat small{color:#777}.stat b{display:block;font-size:20px;margin-top:5px}
+.account{border:0;background:#fffaf7;border-radius:18px;padding:18px;text-align:left;box-shadow:0 8px 25px #00000010;cursor:pointer;transition:.18s transform,.18s box-shadow}.account:hover{transform:translateY(-2px);box-shadow:0 12px 30px #00000018}
+.account.active{outline:2px solid #e89a62;background:#fff0e5}.icon{font-size:24px}.name{font-weight:700;font-size:16px;margin-top:7px}.abal{color:#8a7063;margin-top:5px}
+.card{background:#fffaf7;border-radius:20px;padding:20px;box-shadow:0 10px 32px #00000010}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:linear-gradient(135deg,#fff0e5,#fff2d4);border-radius:15px;padding:15px}.stat small{color:#777}.stat b{display:block;font-size:20px;margin-top:5px}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0;flex-wrap:wrap}
-.btn{border:0;border-radius:10px;padding:11px 15px;background:#b97820;color:#fff;cursor:pointer}.filter{border:0;border-radius:18px;padding:8px 13px;cursor:pointer}.filter.on{background:#b97820;color:#fff}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:#e8955f;color:#fff;cursor:pointer}.filter{border:0;border-radius:18px;padding:8px 13px;cursor:pointer}.filter.on{background:#e8955f;color:#fff}
 table{width:100%;border-collapse:collapse}th,td{padding:11px 7px;text-align:left;border-bottom:1px solid #eee}th{color:#777;font-size:13px}.income{color:#16824b;font-weight:bold}.expense{color:#c43d3d;font-weight:bold}.empty{text-align:center;color:#999;padding:32px}
 .modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:18px;z-index:9999}.modal.show{display:flex}.box{position:relative;z-index:10000;background:#fff;border-radius:16px;padding:20px;width:min(450px,100%)}
-label{display:block;color:#666;font-size:13px;margin:11px 0 5px}input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;font-size:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ma{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.light{background:#eee;color:#222}
-.delete{border:0;background:none;cursor:pointer;color:#999}.accountWrap{position:relative}.removeAccount{position:absolute;right:9px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:15px;cursor:pointer;color:#8d6b3e;z-index:2;padding:5px 7px}.removeAccount:hover{background:#f4dfb9}
+label{display:block;color:#8a7063;font-size:13px;margin:11px 0 5px}input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;font-size:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ma{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.light{background:#eee;color:#222}
+.delete{border:0;background:none;cursor:pointer;color:#999}.accountWrap{position:relative}.removeAccount{position:absolute;right:9px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:15px;cursor:pointer;color:#8a573d;z-index:2;padding:5px 7px}.removeAccount:hover{background:#f1e3da}
 @media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:1fr}.wrap{padding:12px}table{font-size:12px}th:nth-child(2),td:nth-child(2){display:none}}
 body.modal-lock{overflow:hidden;position:fixed;width:100%;left:0;right:0}
 
@@ -28,24 +28,24 @@ body.modal-lock{overflow:hidden;position:fixed;width:100%;left:0;right:0}
  .modal{align-items:flex-start;padding-top:max(18px,env(safe-area-inset-top));overflow:hidden}
  .box{max-height:calc(100dvh - 36px - env(safe-area-inset-top));overflow-y:auto;-webkit-overflow-scrolling:touch}
 }
-.editAccount{position:absolute;right:43px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:14px;cursor:pointer;color:#8d6b3e;z-index:2;padding:5px 7px}
-.editAccount:hover{background:#f4dfb9}
+.editAccount{position:absolute;right:43px;top:8px;border:0;background:#fff3;border-radius:50%;font-size:14px;cursor:pointer;color:#8a573d;z-index:2;padding:5px 7px}
+.editAccount:hover{background:#f1e3da}
 
 .modal{z-index:9999!important}
 .modal .box{position:relative;z-index:10000!important}
 .accountWrap,.account,.editAccount,.removeAccount{z-index:auto}
 body.modal-lock .accountWrap{visibility:hidden}
-.stats-total,.stats-values{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats-total{margin-bottom:16px}.stats-month{border:1px solid #f0dfbf;border-radius:14px;padding:13px;margin:9px 0;background:#fffaf0}.stats-month-title{font-weight:700;margin-bottom:8px}.stats-values div{background:#fff;padding:9px;border-radius:10px}@media(max-width:420px){.stats-total,.stats-values{grid-template-columns:1fr}}</style></head>
+.stats-total,.stats-values{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats-total{margin-bottom:16px}.stats-month{border:1px solid #f1e3da;border-radius:14px;padding:13px;margin:9px 0;background:#fff0e5}.stats-month-title{font-weight:700;margin-bottom:8px}.stats-values div{background:#fff;padding:9px;border-radius:10px}@media(max-width:420px){.stats-total,.stats-values{grid-template-columns:1fr}}</style></head>
 <body>
-<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fff8f0">
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
   <div style="width:min(570px,94vw);background:white;border-radius:36px;padding:65px 36px;text-align:center;box-shadow:0 18px 55px #8b5d3018">
     <img src="login-bg.jpg" alt="幸运熊猫" style="display:block;width:min(100%,360px);height:auto;max-height:42vh;object-fit:contain;margin:0 auto 18px;border-radius:24px">
-    <h1 style="font-size:36px;margin:10px 0 18px;color:#4b2b16">我的记账本</h1>
-    <div style="font-size:19px;color:#b07a5d;margin-bottom:30px">请输入密码才能进入 💗</div>
+    <h1 style="font-size:36px;margin:10px 0 18px;color:#8a573d">我的记账本</h1>
+    <div style="font-size:19px;color:#987d70;margin-bottom:30px">请输入密码才能进入 💗</div>
     <input id="loginPassword" type="password" inputmode="numeric" placeholder="请输入密码"
-      style="width:100%;padding:20px;border:2px solid #f0a06c;border-radius:20px;background:#edf4ff;font-size:22px;text-align:center;letter-spacing:8px;outline:none"
+      style="width:100%;padding:20px;border:2px solid #e8b08b;border-radius:20px;background:#fffaf7;font-size:22px;text-align:center;letter-spacing:8px;outline:none"
       onkeydown="if(event.key==='Enter')unlockApp()">
-    <button onclick="unlockApp()" style="width:100%;margin-top:18px;border:0;border-radius:18px;padding:18px;background:#ea9864;color:white;font-size:20px;font-weight:bold;cursor:pointer">进入记账本 💗</button>
+    <button onclick="unlockApp()" style="width:100%;margin-top:18px;border:0;border-radius:18px;padding:18px;background:#e8955f;color:white;font-size:20px;font-weight:bold;cursor:pointer">进入记账本 💗</button>
     <div id="loginError" style="height:24px;margin-top:12px;color:#c34c4c"></div>
     <div style="margin-top:10px;font-size:13px;color:#aaa">首次使用密码：123456<br>进入后可在页面上修改密码</div>
   </div>
@@ -53,7 +53,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div class="wrap" id="mainApp" style="display:none">
 <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h1>📒 我的记账本</h1><div class="sub">收入、支出和余额一目了然</div></div><button class="btn light" onclick="openSettings()">⚙️ 设置</button></div>
 <div id="accountHome"><div class="toolbar" style="margin-top:4px">
-<div><b>我的账户</b><div style="font-size:13px;color:#806a4d;margin-top:3px">可以自由新增或删除账户</div></div>
+<div><b>我的账户</b><div style="font-size:13px;color:#8a573d;margin-top:3px">可以自由新增或删除账户</div></div>
 <button class="btn" onclick="addAccount()">＋ 新增账户</button>
 </div>
 <div class="grid" id="accounts"></div></div>
@@ -61,7 +61,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div style="margin:0 0 12px"><button class="btn light" onclick="backToAccounts()">‹ 返回我的账户</button></div>
 <div class="card"><h2 id="title" style="margin-top:0"></h2>
 <div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b></div></div><div style="margin-top:10px"><button class="btn light" onclick="openStats()">📊 查看收入 / 支出统计</button></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
-<div id="currentMonthLabel" style="margin-top:16px;font-weight:700;color:#806a4d"></div>
+<div id="currentMonthLabel" style="margin-top:16px;font-weight:700;color:#8a573d"></div>
 <div class="toolbar"><button class="btn" onclick="openM()">＋ 增加记录</button><div><button class="filter on" onclick="sf('all',this)">全部</button> <button class="filter" onclick="sf('income',this)">收入</button> <button class="filter" onclick="sf('expense',this)">支出</button></div></div>
 <div id="list"></div></div></div></div>
 <div class="modal" id="modal"><div class="box"><h2 style="margin-top:0">增加记录</h2>
@@ -81,7 +81,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div class="modal" id="statsModal"><div class="box" style="width:min(620px,100%)"><h2 style="margin-top:0">📊 收入 / 支出统计</h2><div id="statsContent"></div><div class="ma"><button class="btn light" onclick="closeStats()">关闭</button></div></div></div>
 <div class="modal" id="settingsModal"><div class="box">
 <h2 style="margin-top:0">⚙️ 设置</h2>
-<div id="backupStatus" style="font-size:13px;color:#806a4d;background:#fff8e9;border-radius:12px;padding:12px;margin:12px 0"></div>
+<div id="backupStatus" style="font-size:13px;color:#8a573d;background:#fff0e5;border-radius:12px;padding:12px;margin:12px 0"></div>
 <div style="display:grid;gap:10px">
 <button class="btn" style="text-align:left;padding:15px" onclick="exportBackup()">🔐💾 导出加密备份</button>
 <button class="btn" style="text-align:left;padding:15px" onclick="document.getElementById('importFile').click()">📂 导入 / 恢复资料</button>
@@ -247,7 +247,7 @@ function openStats(){
  h+=months.length?months.map(m=>`<div class="stats-month" style="cursor:pointer" onclick="showMonthDetail('${m}')">
    <div class="stats-month-title" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
      <span>${m.slice(0,4)}年${Number(m.slice(5,7))}月</span>
-     <span style="font-size:13px;color:#9a7b55">查看明细 ›</span>
+     <span style="font-size:13px;color:#987d70">查看明细 ›</span>
    </div>
    <div class="stats-values">
      <div>收入<br><span class="income">${multi(monthly[m],"income")}</span></div>
