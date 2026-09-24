@@ -47,14 +47,14 @@ body.modal-lock .accountWrap{visibility:hidden}
   border-radius:0 0 22px 22px;
 }
 .appHeaderMain{display:flex;align-items:center;gap:12px;min-width:0}
-.appHeaderImg{width:72px;height:72px;object-fit:contain;flex:0 0 auto}
-.appHeaderTitle{font-size:28px;font-weight:800;color:#49342B;line-height:1.15}
+.appHeaderImg{width:104px;height:104px;object-fit:contain;flex:0 0 auto}
+.appHeaderTitle{font-size:31px;font-weight:800;color:#49342B;line-height:1.15}
 .appHeaderSub{font-size:14px;color:#75594D;margin-top:5px}
 .appHeaderExit{border:0;border-radius:18px;padding:9px 14px;background:#FFF8F3;color:#795B4E;font-size:14px;cursor:pointer;white-space:nowrap}
 @media(max-width:650px){
-  .appHeader{margin:-12px -12px 16px;padding:16px 14px 14px;border-radius:0}
-  .appHeaderImg{width:66px;height:66px}
-  .appHeaderTitle{font-size:27px}
+  .appHeader{margin:-12px -12px 16px;padding:12px 14px 12px;border-radius:0}
+  .appHeaderImg{width:96px;height:96px}
+  .appHeaderTitle{font-size:30px}
 }
 </style></head>
 <body>
@@ -246,6 +246,10 @@ function unlockApp(){
 }
 
 function logoutApp(){
+  document.body.classList.remove("modal-lock");
+  document.body.style.position="";
+  document.body.style.top="";
+  document.body.style.width="";
   document.getElementById("mainApp").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
   document.getElementById("loginPassword").value="";
