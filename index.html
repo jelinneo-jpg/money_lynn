@@ -7,15 +7,15 @@
 <link rel="icon" type="image/jpeg" href="ledger-icon.jpg">
 <link rel="preload" as="image" href="login-bg.jpg">
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#FFF8EF 0%,#FBEFDF 52%,#F6E3CE 100%);color:#4b3428;min-height:100vh}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#FFF9F4;color:#4b3428;min-height:100vh}
 .wrap{max-width:950px;margin:auto;padding:20px}h1{margin:0 0 5px;font-size:26px}.sub{color:#777;margin-bottom:18px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
-.account{border:0;background:#F8E1D4;border-radius:18px;padding:18px;text-align:left;box-shadow:0 8px 25px #00000010;cursor:pointer;transition:.18s transform,.18s box-shadow}.account:hover{transform:translateY(-2px);box-shadow:0 12px 30px #00000018}
-.account.active{outline:2px solid #e89a62;background:#F4D2C2}.icon{font-size:24px}.name{font-weight:700;font-size:16px;margin-top:7px}.abal{color:#8a7063;margin-top:5px}
+.account{border:0;background:#F3D2C2;border-radius:18px;padding:18px;text-align:left;box-shadow:0 8px 25px #00000010;cursor:pointer;transition:.18s transform,.18s box-shadow}.account:hover{transform:translateY(-2px);box-shadow:0 12px 30px #00000018}
+.account.active{outline:2px solid #E9A47D;background:#EFC4B0}.icon{font-size:24px}.name{font-weight:700;font-size:16px;margin-top:7px}.abal{color:#8a7063;margin-top:5px}
 .card{background:#fffaf7;border-radius:20px;padding:20px;box-shadow:0 10px 32px #00000010}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat{background:linear-gradient(135deg,#fff0e5,#fff2d4);border-radius:15px;padding:15px}.stat small{color:#777}.stat b{display:block;font-size:20px;margin-top:5px}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0;flex-wrap:wrap}
-.btn{border:0;border-radius:10px;padding:11px 15px;background:#e8955f;color:#fff;cursor:pointer}.filter{border:0;border-radius:18px;padding:8px 13px;cursor:pointer}.filter.on{background:#e8955f;color:#fff}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:#E9A47D;color:#fff;cursor:pointer}.filter{border:0;border-radius:18px;padding:8px 13px;cursor:pointer}.filter.on{background:#E9A47D;color:#fff}
 table{width:100%;border-collapse:collapse}th,td{padding:11px 7px;text-align:left;border-bottom:1px solid #eee}th{color:#777;font-size:13px}.income{color:#16824b;font-weight:bold}.expense{color:#c43d3d;font-weight:bold}.empty{text-align:center;color:#999;padding:32px}
 .modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:18px;z-index:9999}.modal.show{display:flex}.box{position:relative;z-index:10000;background:#fff;border-radius:16px;padding:20px;width:min(450px,100%)}
 label{display:block;color:#8a7063;font-size:13px;margin:11px 0 5px}input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;font-size:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ma{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.light{background:#eee;color:#222}
