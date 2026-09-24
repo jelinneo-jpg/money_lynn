@@ -49,16 +49,18 @@ body.modal-lock .accountWrap{visibility:hidden}
 </div>
 <div class="wrap" id="mainApp" style="display:none">
 <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h1>📒 我的记账本</h1><div class="sub">收入、支出和余额一目了然</div></div><button class="btn light" onclick="openSettings()">⚙️ 设置</button></div>
-<div class="toolbar" style="margin-top:4px">
+<div id="accountHome"><div class="toolbar" style="margin-top:4px">
 <div><b>我的账户</b><div style="font-size:13px;color:#806a4d;margin-top:3px">可以自由新增或删除账户</div></div>
 <button class="btn" onclick="addAccount()">＋ 新增账户</button>
 </div>
-<div class="grid" id="accounts"></div>
+<div class="grid" id="accounts"></div></div>
+<div id="accountDetail" style="display:none">
+<div style="margin:0 0 12px"><button class="btn light" onclick="backToAccounts()">‹ 返回我的账户</button></div>
 <div class="card"><h2 id="title" style="margin-top:0"></h2>
 <div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b></div></div><div style="margin-top:10px"><button class="btn light" onclick="openStats()">📊 查看收入 / 支出统计</button></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
 <div id="currentMonthLabel" style="margin-top:16px;font-weight:700;color:#806a4d"></div>
 <div class="toolbar"><button class="btn" onclick="openM()">＋ 增加记录</button><div><button class="filter on" onclick="sf('all',this)">全部</button> <button class="filter" onclick="sf('income',this)">收入</button> <button class="filter" onclick="sf('expense',this)">支出</button></div></div>
-<div id="list"></div></div></div>
+<div id="list"></div></div></div></div>
 <div class="modal" id="modal"><div class="box"><h2 style="margin-top:0">增加记录</h2>
 <label>日期</label><input id="date" type="date">
 <div class="row"><div><label>类型</label><select id="type"><option value="income">收入</option><option value="expense">支出</option></select></div><div><label>币种（CURRENCY）</label><select id="currency"><option value="" selected disabled>请选择币种</option><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="CNY">🇨🇳 CNY</option></select></div></div>
@@ -99,7 +101,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 let names=JSON.parse(localStorage.getItem("zhLedgerAccounts")||'["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"]');
 let icons=JSON.parse(localStorage.getItem("zhLedgerIcons")||'["💳","💳","👩","👩","👨","👨","🏠"]');
 let data=JSON.parse(localStorage.getItem("zhLedger")||"{}"); names.forEach(n=>data[n]??=[]);
-let current=names[0]||"", filter="all";
+let current="", filter="all";
 const symbols={MYR:"RM",SGD:"S$",USD:"US$",CNY:"¥"};
 const money=(n,c="MYR")=>(symbols[c]||c)+" "+Number(n).toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
@@ -123,7 +125,21 @@ function render(){
  list.innerHTML=rows.length?`<table><thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>REMARK</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.date.split("-").reverse().join("/")}</td><td>${r.type=="income"?"收入":"支出"}</td><td>${esc(r.category)}</td><td>${r.currency||"MYR"}</td><td class=${r.type}>${r.type=="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark)}</td><td><button class=delete onclick="del(${r._i})">🗑️</button></td></tr>`).join("")}</tbody></table>`:`<div class=empty>本月还没有记录<br>旧月份资料可在「📊 查看收入 / 支出统计」查看</div>`;
  localStorage.setItem("zhLedger",JSON.stringify(data));localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
 }
-function pick(i){current=names[i];filter="all";document.querySelectorAll(".filter").forEach((x,j)=>x.classList.toggle("on",j==0));render()}
+function pick(i){
+ current=names[i];filter="all";
+ document.querySelectorAll(".filter").forEach((x,j)=>x.classList.toggle("on",j==0));
+ document.getElementById("accountHome").style.display="none";
+ document.getElementById("accountDetail").style.display="block";
+ render();
+ window.scrollTo(0,0);
+}
+function backToAccounts(){
+ current="";
+ document.getElementById("accountDetail").style.display="none";
+ document.getElementById("accountHome").style.display="block";
+ render();
+ window.scrollTo(0,0);
+}
 function sf(f,e){filter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("on"));e.classList.add("on");render()}
 let pageY=0;function lockScroll(){pageY=window.scrollY;document.body.style.top=`-${pageY}px`;document.body.classList.add("modal-lock")}function unlockScroll(){document.body.classList.remove("modal-lock");document.body.style.top="";window.scrollTo(0,pageY)}
 function openM(){date.value=new Date().toISOString().slice(0,10);amount.value="";category.value="";remark.value="";
@@ -136,7 +152,7 @@ function addAccount(){
  let n=prompt("请输入新账户名称：\n例如：爸爸、旅行基金、房子");
  if(!n)return;n=n.trim();if(!n)return;
  if(names.includes(n)){alert("这个账户已经存在");return}
- names.push(n);icons.push("💰");data[n]=[];current=n;render();
+ names.push(n);icons.push("💰");data[n]=[];current=n;document.getElementById("accountHome").style.display="none";document.getElementById("accountDetail").style.display="block";render();
 }
 let editingAccountIndex=-1;
 function editAccount(i){
@@ -337,7 +353,7 @@ async function importBackup(ev){
   if(!Array.isArray(restored.accounts)||typeof restored.ledger!=="object")throw new Error("invalid");
   if(!confirm("导入后会覆盖这台设备目前的账目资料。\n\n确定继续吗？"))return;
   names=restored.accounts;icons=Array.isArray(restored.icons)?restored.icons:names.map(()=> "💰");data=restored.ledger;
-  names.forEach(n=>data[n]??=[]);current=names[0]||"";
+  names.forEach(n=>data[n]??=[]);current="";document.getElementById("accountDetail").style.display="none";document.getElementById("accountHome").style.display="block";
   localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));
   localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
   localStorage.setItem("zhLedger",JSON.stringify(data));
@@ -347,7 +363,7 @@ async function importBackup(ev){
 function resetDefault(){
  if(!confirm("确定恢复默认资料吗？所有收入和支出都会被删除。"))return;
  if(!confirm("再次确认：此操作无法撤销。建议先导出备份。"))return;
- names=[...DEFAULT_NAMES];icons=[...DEFAULT_ICONS];data={};names.forEach(n=>data[n]=[]);current=names[0];
+ names=[...DEFAULT_NAMES];icons=[...DEFAULT_ICONS];data={};names.forEach(n=>data[n]=[]);current="";document.getElementById("accountDetail").style.display="none";document.getElementById("accountHome").style.display="block";
  localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));localStorage.setItem("zhLedger",JSON.stringify(data));
  render();closeSettings();alert("已恢复默认资料。");
 }
