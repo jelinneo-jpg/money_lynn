@@ -183,6 +183,11 @@ function unlockApp(){
    document.getElementById("loginScreen").style.display="none";
    document.getElementById("mainApp").style.display="block";
    document.getElementById("loginError").textContent="";
+   document.body.style.position="";
+   document.body.style.top="";
+   document.body.classList.remove("modal-lock");
+   window.scrollTo(0,0);
+   requestAnimationFrame(()=>window.scrollTo(0,0));
  }else{
    document.getElementById("loginError").textContent="密码不正确，请再试一次";
    document.getElementById("loginPassword").value="";
