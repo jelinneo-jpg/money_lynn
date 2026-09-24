@@ -35,7 +35,28 @@ body.modal-lock{overflow:hidden;position:fixed;width:100%;left:0;right:0}
 .modal .box{position:relative;z-index:10000!important}
 .accountWrap,.account,.editAccount,.removeAccount{z-index:auto}
 body.modal-lock .accountWrap{visibility:hidden}
-.stats-total,.stats-values{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats-total{margin-bottom:16px}.stats-month{border:1px solid #f1e3da;border-radius:14px;padding:13px;margin:9px 0;background:#fff0e5}.stats-month-title{font-weight:700;margin-bottom:8px}.stats-values div{background:#fff;padding:9px;border-radius:10px}@media(max-width:420px){.stats-total,.stats-values{grid-template-columns:1fr}}</style></head>
+.stats-total,.stats-values{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats-total{margin-bottom:16px}.stats-month{border:1px solid #f1e3da;border-radius:14px;padding:13px;margin:9px 0;background:#fff0e5}.stats-month-title{font-weight:700;margin-bottom:8px}.stats-values div{background:#fff;padding:9px;border-radius:10px}@media(max-width:420px){.stats-total,.stats-values{grid-template-columns:1fr}}
+.appHeader{
+  margin:0 -12px 18px;
+  padding:18px 18px 16px;
+  background:#F2BE9D;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-radius:0 0 22px 22px;
+}
+.appHeaderMain{display:flex;align-items:center;gap:12px;min-width:0}
+.appHeaderImg{width:72px;height:72px;object-fit:contain;flex:0 0 auto}
+.appHeaderTitle{font-size:28px;font-weight:800;color:#49342B;line-height:1.15}
+.appHeaderSub{font-size:14px;color:#75594D;margin-top:5px}
+.appHeaderExit{border:0;border-radius:18px;padding:9px 14px;background:#FFF8F3;color:#795B4E;font-size:14px;cursor:pointer;white-space:nowrap}
+@media(max-width:650px){
+  .appHeader{margin:-12px -12px 16px;padding:16px 14px 14px;border-radius:0}
+  .appHeaderImg{width:66px;height:66px}
+  .appHeaderTitle{font-size:27px}
+}
+</style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
   <div style="width:min(570px,94vw);background:white;border-radius:36px;padding:65px 36px;text-align:center;box-shadow:0 18px 55px #8b5d3018">
@@ -51,7 +72,17 @@ body.modal-lock .accountWrap{visibility:hidden}
   </div>
 </div>
 <div class="wrap" id="mainApp" style="display:none">
-<div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h1>📒 我的记账本</h1><div class="sub">收入、支出和余额一目了然</div></div><button class="btn light" onclick="openSettings()">⚙️ 设置</button></div>
+<div class="appHeader">
+  <div class="appHeaderMain">
+    <img class="appHeaderImg" src="ledger-title-bear.png" alt="记账熊熊">
+    <div>
+      <div class="appHeaderTitle">我的记账本</div>
+      <div class="appHeaderSub">记录生活 · 简单记账 ❤️</div>
+    </div>
+  </div>
+  <button class="appHeaderExit" onclick="logoutApp()">退出</button>
+</div>
+<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn light" onclick="openSettings()">⚙️ 设置</button></div>
 <div id="accountHome"><div class="toolbar" style="margin-top:4px">
 <div><b>我的账户</b><div style="font-size:13px;color:#8a573d;margin-top:3px">可以自由新增或删除账户</div></div>
 <button class="btn" onclick="addAccount()">＋ 新增账户</button>
@@ -213,6 +244,18 @@ function unlockApp(){
    document.getElementById("loginPassword").focus();
  }
 }
+
+function logoutApp(){
+  document.getElementById("mainApp").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+  document.getElementById("loginPassword").value="";
+  document.getElementById("loginError").textContent="";
+  current="";
+  document.getElementById("accountDetail").style.display="none";
+  document.getElementById("accountHome").style.display="block";
+  window.scrollTo(0,0);
+}
+
 function changePassword(){
  let oldp=prompt("请输入目前密码：");
  if(oldp===null)return;
