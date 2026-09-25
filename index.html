@@ -11,7 +11,7 @@
 .wrap{max-width:950px;margin:auto;padding:20px}h1{margin:0 0 5px;font-size:26px}.sub{color:#777;margin-bottom:18px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
 .account{border:1px solid #EBCFBE;background:#F7E9DF;border-radius:18px;padding:18px;text-align:left;box-shadow:0 7px 18px #8B5D3012;cursor:pointer;transition:.18s transform,.18s box-shadow}.account:hover{transform:translateY(-2px);box-shadow:0 12px 30px #00000018}
-.account.active{outline:2px solid #E4B89E;background:#F3DFD2}.icon{font-size:24px}.name{font-weight:700;font-size:16px;margin-top:7px;color:#222}.abal{color:#8a7063;margin-top:5px;font-size:15px}
+.account.active{outline:2px solid #E4B89E;background:#F3DFD2}.icon{font-size:24px}.name{font-weight:700;font-size:16px;margin-top:7px;color:#222}.abal{color:#8a7063;margin-top:5px}
 .card{background:#fffaf7;border-radius:20px;padding:20px;box-shadow:0 10px 32px #00000010}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat{background:linear-gradient(135deg,#fff0e5,#fff2d4);border-radius:15px;padding:15px}.stat small{color:#777}.stat b{display:block;font-size:20px;margin-top:5px}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0;flex-wrap:wrap}
@@ -85,6 +85,17 @@ body.modal-lock .accountWrap{visibility:hidden}
 .iconChoice .lab{font-size:12px;white-space:nowrap}
 .iconChoice .art img{max-width:46px;max-height:46px;object-fit:contain}
 #editAccountModal .box{max-width:460px}
+
+/* 2026-09-25 account detail quick actions */
+.balanceStatsBtn{display:block;width:min(100%,360px);padding:13px 18px;border-radius:14px;font-size:16px;font-weight:600;text-align:left}
+.quickRecordRow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 18px}
+.quickRecordBtn{border:0;border-radius:16px;padding:14px 10px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;color:#49342b}
+.quickRecordBtn.incomeQuick{background:#E6F3EA}
+.quickRecordBtn.expenseQuick{background:#FBE8E4}
+.quickRecordBtn .quickIcon{display:inline-flex;width:32px;height:32px;border-radius:50%;align-items:center;justify-content:center;margin-right:8px;color:#fff;font-size:23px;line-height:1;vertical-align:middle}
+.quickRecordBtn.incomeQuick .quickIcon{background:#49C77C}
+.quickRecordBtn.expenseQuick .quickIcon{background:#F08368}
+@media(max-width:650px){.balanceStatsBtn{width:100%;font-size:15px}.quickRecordRow{gap:10px}.quickRecordBtn{font-size:15px;padding:12px 6px}}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -120,9 +131,10 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div id="accountDetail" style="display:none">
 <div style="margin:0 0 12px"><button class="btn light" onclick="backToAccounts()">‹ 返回我的账户</button></div>
 <div class="card"><h2 id="title" style="margin-top:0"></h2>
-<div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b><img class="balancePig" src="piggy-balance.png" alt="存钱罐"></div></div><div style="margin-top:10px"><button class="btn balanceStatsBtn" onclick="openStats()">📊 查看收入 / 支出统计　›</button></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
+<div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b><img class="balancePig" src="piggy-balance.png" alt="存钱罐"><button class="btn balanceStatsBtn" onclick="openStats()">📊　查看收入 / 支出统计　›</button></div></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
+<div class="quickRecordRow"><button class="quickRecordBtn incomeQuick" onclick="openMWithType('income')"><span class="quickIcon">↓</span>记录收入</button><button class="quickRecordBtn expenseQuick" onclick="openMWithType('expense')"><span class="quickIcon">↑</span>记录支出</button></div>
 <div id="currentMonthLabel" style="margin-top:16px;font-weight:700;color:#8a573d"></div>
-<div class="toolbar"><button class="btn" onclick="openM()">＋ 增加记录</button><div><button class="filter on" onclick="sf('all',this)">全部</button> <button class="filter" onclick="sf('income',this)">收入</button> <button class="filter" onclick="sf('expense',this)">支出</button></div></div>
+<div class="toolbar" style="justify-content:flex-end"><div><button class="filter on" onclick="sf('all',this)">全部</button> <button class="filter" onclick="sf('income',this)">收入</button> <button class="filter" onclick="sf('expense',this)">支出</button></div></div>
 <div id="list"></div></div></div></div>
 <div class="modal" id="modal"><div class="box"><h2 style="margin-top:0">增加记录</h2>
 <label>日期</label><input id="date" type="date">
@@ -218,6 +230,7 @@ function backToAccounts(){
 }
 function sf(f,e){filter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("on"));e.classList.add("on");render()}
 let pageY=0;function lockScroll(){pageY=window.scrollY;document.body.style.top=`-${pageY}px`;document.body.classList.add("modal-lock")}function unlockScroll(){document.body.classList.remove("modal-lock");document.body.style.top="";window.scrollTo(0,pageY)}
+function openMWithType(t){openM();setTimeout(()=>{const el=document.getElementById('type');if(el)el.value=t},0)}
 function openM(){date.value=new Date().toISOString().slice(0,10);amount.value="";category.value="";remark.value="";
  currency.value="";
  lockScroll();modal.classList.add("show")}
