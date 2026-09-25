@@ -167,7 +167,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div class="modal" id="modal"><div class="box"><h2 style="margin-top:0">增加记录</h2>
 <label>日期</label><input id="date" type="date">
 <div class="row"><div><label>类型</label><select id="type"><option value="income">收入</option><option value="expense">支出</option></select></div><div><label>币种（CURRENCY）</label><select id="currency"><option value="" selected disabled>请选择币种</option><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="CNY">🇨🇳 CNY</option></select></div></div>
-<label>金额</label><input id="amount" type="number" min="0" step=".01" placeholder="0.00" step="0.01" inputmode="decimal" onblur="this.value=(function(v){v=String(v||'').trim().replace(/,/g,'');if(v==='')return '';var n=Number(v);return isFinite(n)?n.toFixed(2):v;})(this.value)" onchange="this.value=(function(v){v=String(v||'').trim().replace(/,/g,'');if(v==='')return '';var n=Number(v);return isFinite(n)?n.toFixed(2):v;})(this.value)">
+<label>金额</label><input id="amount" placeholder="0.00" type="text" inputmode="numeric" autocomplete="off" oninput="formatMoneyTyping(this)">
 <label>分类</label><input id="category" placeholder="例如：薪水、吃饭、购物、装修">
 <label>备注（REMARK）</label><input id="remark" placeholder="输入备注">
 <div class="ma"><button class="btn light" onclick="closeM()">取消</button><button class="btn" onclick="save()">保存</button></div></div></div>
@@ -519,46 +519,22 @@ function backupReminder(){
 }
 render();backupReminder();
 </script>
-<script>
-(function(){
-  function setupAutoDecimal(){
-    const amount =
-      document.getElementById('amount') ||
-      document.querySelector('input[name="amount"]') ||
-      Array.from(document.querySelectorAll('input')).find(el =>
-        el.placeholder === '0.00' || /amount/i.test(el.id || '')
-      );
-    if(!amount || amount.dataset.autoDecimal === '1') return;
-    amount.dataset.autoDecimal = '1';
-    amount.setAttribute('inputmode','decimal');
-    amount.setAttribute('step','0.01');
 
-    amount.addEventListener('blur', function(){
-      let v = String(this.value || '').trim().replace(/,/g,'');
-      if(v === '') return;
-      const num = Number(v);
-      if(Number.isFinite(num)) this.value = num.toFixed(2);
-    });
-  }
-  document.addEventListener('DOMContentLoaded', setupAutoDecimal);
-  setTimeout(setupAutoDecimal, 0);
-})();
-</script>
+
+
+
 
 
 <script>
-document.addEventListener('click', function(e){
-  const t=e.target.closest('button,input[type="button"],input[type="submit"]');
-  if(!t) return;
-  const label=(t.textContent||t.value||'').trim();
-  if(label==='保存'){
-    const a=document.querySelector('input[placeholder="0.00"],#amount,input[name="amount"]');
-    if(a && a.value!==''){
-      const n=Number(String(a.value).replace(/,/g,''));
-      if(Number.isFinite(n)) a.value=n.toFixed(2);
-    }
-  }
-}, true);
+function formatMoneyTyping(el){
+  let digits = String(el.value || '').replace(/\D/g,'');
+  digits = digits.replace(/^0+(?=\d{3})/, '');
+  if(!digits){ el.value=''; return; }
+  let cents = digits.slice(-2).padStart(2,'0');
+  let whole = digits.slice(0,-2) || '0';
+  whole = String(parseInt(whole,10) || 0);
+  el.value = whole + '.' + cents;
+}
 </script>
 
 </body></html>
