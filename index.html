@@ -57,19 +57,20 @@ body.modal-lock .accountWrap{visibility:hidden}
   .appHeaderTitle{font-size:30px}
 }
 
-#accountDetail .summary .stat{
-  background:#E9A47D;
-}
-#accountDetail .summary .stat small,
-#accountDetail .summary .stat b{
-  color:#fff;
-}
+
 
 .appHeader{
   position:sticky;
   top:0;
   z-index:100;
 }
+
+#accountDetail .summary .stat{position:relative;overflow:hidden;min-height:160px;padding:24px 145px 22px 24px;background:#fffaf6;border:1px solid #f0d8ca;border-left:7px solid #E9A47D;box-shadow:0 10px 26px #7a4c2b12}
+#accountDetail .summary .stat small{color:#6d5144;font-size:15px;font-weight:700}
+#accountDetail .summary .stat b{color:#3f2c24;font-size:30px;line-height:1.25;margin-top:10px;position:relative;z-index:2}
+.balancePig{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:115px;height:115px;object-fit:cover;object-position:72% 37%;border-radius:24px}
+#accountDetail .balanceStatsBtn{margin-top:12px;background:#E9A47D;color:#fff}
+@media(max-width:650px){#accountDetail .summary .stat{min-height:150px;padding:21px 122px 20px 18px}#accountDetail .summary .stat b{font-size:27px}.balancePig{width:102px;height:102px;right:10px}}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -105,7 +106,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div id="accountDetail" style="display:none">
 <div style="margin:0 0 12px"><button class="btn light" onclick="backToAccounts()">‹ 返回我的账户</button></div>
 <div class="card"><h2 id="title" style="margin-top:0"></h2>
-<div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b></div></div><div style="margin-top:10px"><button class="btn light" onclick="openStats()">📊 查看收入 / 支出统计</button></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
+<div class="summary" style="grid-template-columns:1fr"><div class="stat"><small>目前 BALANCE</small><b id="balance"></b><img class="balancePig" src="piggy-balance.png" alt="存钱罐"></div></div><div style="margin-top:10px"><button class="btn balanceStatsBtn" onclick="openStats()">📊 查看收入 / 支出统计　›</button></div><span id="income" style="display:none"></span><span id="expense" style="display:none"></span>
 <div id="currentMonthLabel" style="margin-top:16px;font-weight:700;color:#8a573d"></div>
 <div class="toolbar"><button class="btn" onclick="openM()">＋ 增加记录</button><div><button class="filter on" onclick="sf('all',this)">全部</button> <button class="filter" onclick="sf('income',this)">收入</button> <button class="filter" onclick="sf('expense',this)">支出</button></div></div>
 <div id="list"></div></div></div></div>
