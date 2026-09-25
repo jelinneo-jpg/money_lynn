@@ -71,6 +71,20 @@ body.modal-lock .accountWrap{visibility:hidden}
 .balancePig{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:115px;height:115px;object-fit:cover;object-position:72% 37%;border-radius:24px}
 #accountDetail .balanceStatsBtn{margin-top:12px;background:#E9A47D;color:#fff}
 @media(max-width:650px){#accountDetail .summary .stat{min-height:150px;padding:21px 122px 20px 18px}#accountDetail .summary .stat b{font-size:27px}.balancePig{width:102px;height:102px;right:10px}}
+
+.accountMenuBtn{position:absolute;right:12px;top:12px;z-index:4;border:0;width:40px;height:40px;border-radius:50%;background:#fffaf6;color:#56372b;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 3px 12px #0000000a}
+.accountWrap .editAccount,.accountWrap .removeAccount{display:none!important}
+.accountActions{position:fixed;z-index:9999;min-width:155px;background:#fffaf6;border:1px solid #edd3c4;border-radius:16px;padding:7px;box-shadow:0 12px 30px #5b38252b;display:none}
+.accountActions.show{display:block}
+.accountActions button{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:11px;font-size:15px;color:#49342b}
+.accountActions button:active{background:#f9e9df}
+.iconPickerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px;max-height:54vh;overflow:auto;padding:2px}
+.iconChoice{border:1px solid #efd7c7;background:#fff8f1;border-radius:15px;padding:10px 4px 8px;text-align:center;cursor:pointer;color:#5a4136}
+.iconChoice.on{border:2px solid #ed9a83;background:#fff0ec}
+.iconChoice .art{height:49px;display:flex;align-items:center;justify-content:center;font-size:36px;background:#fff1e5;border-radius:12px;margin:0 4px 6px}
+.iconChoice .lab{font-size:12px;white-space:nowrap}
+.iconChoice .art img{max-width:44px;max-height:44px;object-fit:contain}
+#editAccountModal .box{max-width:460px}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -138,19 +152,33 @@ body.modal-lock .accountWrap{visibility:hidden}
 </div></div>
 
 <div class="modal" id="editAccountModal"><div class="box">
-<h2 style="margin-top:0">✏️ 编辑账户名称</h2>
+<h2 style="margin-top:0">编辑账户</h2>
 <label>账户名称</label>
 <input id="editAccountName" type="text" autocomplete="off">
+<label style="display:block;margin-top:14px">选择账户图标</label>
+<div id="iconPicker" class="iconPickerGrid"></div>
 <div class="ma">
 <button class="btn light" onclick="closeEditAccount()">取消</button>
 <button class="btn" onclick="saveAccountName()">保存</button>
 </div>
 </div></div>
+<div id="accountActions" class="accountActions">
+<button onclick="actionEdit()">✎ 编辑账户</button>
+<button onclick="actionDelete()">🗑 删除账户</button>
+</div>
 <script>
 let names=JSON.parse(localStorage.getItem("zhLedgerAccounts")||'["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"]');
 let icons=JSON.parse(localStorage.getItem("zhLedgerIcons")||'["💳","💳","👩","👩","👨","👨","🏠"]');
 let data=JSON.parse(localStorage.getItem("zhLedger")||"{}"); names.forEach(n=>data[n]??=[]);
 let current="", filter="all";
+const iconCatalog=[
+["💳","银行卡"],["💳","信用卡"],["👛","钱包"],["🐷","存钱罐"],
+["🪙","金币"],["💵","现金"],["💱","换钱"],["🏠","房子"],
+["🏢","公寓"],["🚗","车子"],["✈️","旅行"],["🛍️","购物"],
+["👩","妈妈"],["👨","爸爸"],["👧","女生"],["👦","男生"],
+["🐶","宠物"],["🌱","其他"]
+];
+let selectedAccountIcon="💳", menuAccountIndex=-1;
 const symbols={MYR:"RM",SGD:"S$",USD:"US$",CNY:"¥"};
 const money=(n,c="MYR")=>(symbols[c]||c)+" "+Number(n).toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
@@ -163,7 +191,7 @@ function multi(t,kind){let a=Object.entries(t).filter(([c,v])=>v[kind]!==0).map(
 function multibal(t){let a=Object.entries(t).filter(([c,v])=>v.income-v.expense!==0).map(([c,v])=>money(v.income-v.expense,c));return a.length?a.join(" / "):money(0,"MYR")}
 function render(){
  let now=new Date(); let ml=document.getElementById("currentMonthLabel"); if(ml)ml.textContent="📅 "+now.getFullYear()+"年"+(now.getMonth()+1)+"月记录";
- document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap"><button class="editAccount" title="编辑账户名称" onclick="event.stopPropagation();editAccount(${i})">✏️</button><button class="removeAccount" title="删除账户" onclick="event.stopPropagation();removeAccount(${i})">✕</button><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="pick(${i})"><div class=icon>${icons[i]||"💰"}</div><div class=name>${esc(n)}</div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
+ document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap"><button class="accountMenuBtn" onclick="event.stopPropagation();openAccountMenu(${i},this)">⋯</button><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="pick(${i})"><div class=icon>${icons[i]||"💳"}</div><div class=name>${esc(n)}</div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
  if(!current || !names.length){
  title.textContent="还没有账户"; income.textContent=money(0,"MYR"); expense.textContent=money(0,"MYR"); balance.textContent=money(0,"MYR");
  list.innerHTML='<div class=empty>请先点击「＋ 新增账户」</div>';
@@ -197,48 +225,57 @@ function openM(){date.value=new Date().toISOString().slice(0,10);amount.value=""
 function closeM(){modal.classList.remove("show");unlockScroll()}
 function save(){let a=Number(amount.value);if(!date.value||!a){alert("请填写日期和金额");return}if(!currency.value){alert("请选择币种（CURRENCY）");return}data[current].push({date:date.value,type:type.value,currency:currency.value,amount:a,category:category.value||"未分类",remark:remark.value||""});closeM();render()}
 function del(i){if(confirm("确定删除这笔记录吗？")){data[current].splice(i,1);render()}}
+function renderIconPicker(){
+ const box=document.getElementById("iconPicker");
+ box.innerHTML=iconCatalog.map(([ico,lab],i)=>`<button type="button" class="iconChoice ${selectedAccountIcon===ico?'on':''}" onclick="selectAccountIcon(${i})"><div class="art">${ico}</div><div class="lab">${lab}</div></button>`).join("");
+}
+function selectAccountIcon(i){selectedAccountIcon=iconCatalog[i][0];renderIconPicker()}
 function addAccount(){
  let n=prompt("请输入新账户名称：\n例如：爸爸、旅行基金、房子");
  if(!n)return;n=n.trim();if(!n)return;
  if(names.includes(n)){alert("这个账户已经存在");return}
- names.push(n);icons.push("💰");data[n]=[];current=n;document.getElementById("accountHome").style.display="none";document.getElementById("accountDetail").style.display="block";render();
+ names.push(n);icons.push("💳");data[n]=[];
+ editingAccountIndex=names.length-1; selectedAccountIcon="💳";
+ document.getElementById("editAccountName").value=n;
+ renderIconPicker(); lockScroll(); document.getElementById("editAccountModal").classList.add("show");
 }
 let editingAccountIndex=-1;
 function editAccount(i){
  editingAccountIndex=i;
  document.getElementById("editAccountName").value=names[i]||"";
- lockScroll();
+ selectedAccountIcon=icons[i]||"💳";
+ renderIconPicker(); lockScroll();
  document.getElementById("editAccountModal").classList.add("show");
- setTimeout(()=>document.getElementById("editAccountName").focus(),120);
 }
 function closeEditAccount(){
  document.getElementById("editAccountModal").classList.remove("show");
- editingAccountIndex=-1;
- unlockScroll();
+ editingAccountIndex=-1; unlockScroll(); render();
 }
 function saveAccountName(){
  if(editingAccountIndex<0)return;
- let oldName=names[editingAccountIndex];
- let newName=document.getElementById("editAccountName").value.trim();
+ let oldName=names[editingAccountIndex], newName=document.getElementById("editAccountName").value.trim();
  if(!newName){alert("请输入账户名称");return}
- if(newName===oldName){closeEditAccount();return}
- if(names.includes(newName)){alert("这个账户名称已经存在");return}
- data[newName]=data[oldName]||[];
- delete data[oldName];
- names[editingAccountIndex]=newName;
- if(current===oldName)current=newName;
+ if(newName!==oldName && names.includes(newName)){alert("这个账户名称已经存在");return}
+ if(newName!==oldName){data[newName]=data[oldName]||[];delete data[oldName];names[editingAccountIndex]=newName;if(current===oldName)current=newName}
+ icons[editingAccountIndex]=selectedAccountIcon;
  document.getElementById("editAccountModal").classList.remove("show");
- editingAccountIndex=-1;
- unlockScroll();
- render();
+ editingAccountIndex=-1;unlockScroll();render();
 }
 function removeAccount(i){
  let n=names[i];
  if(!confirm(`确定删除「${n}」吗？\n\n这个账户里面的所有收入和支出记录也会一起删除。`))return;
  delete data[n];names.splice(i,1);icons.splice(i,1);
- if(current===n)current=names[0]||"";
- render();
+ if(current===n)current=names[0]||"";render();
 }
+function openAccountMenu(i,btn){
+ menuAccountIndex=i; const m=document.getElementById("accountActions");
+ const r=btn.getBoundingClientRect(); m.style.top=(r.bottom+6)+"px";
+ m.style.left=Math.max(10,Math.min(window.innerWidth-165,r.right-155))+"px"; m.classList.add("show");
+}
+function closeAccountMenu(){document.getElementById("accountActions").classList.remove("show")}
+function actionEdit(){let i=menuAccountIndex;closeAccountMenu();editAccount(i)}
+function actionDelete(){let i=menuAccountIndex;closeAccountMenu();removeAccount(i)}
+document.addEventListener("click",e=>{if(!e.target.closest(".accountActions")&&!e.target.closest(".accountMenuBtn"))closeAccountMenu()});
 
 const PASSKEY="zhLedgerPassword";
 if(!localStorage.getItem(PASSKEY)) localStorage.setItem(PASSKEY,"123456");
