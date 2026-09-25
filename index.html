@@ -96,6 +96,34 @@ body.modal-lock .accountWrap{visibility:hidden}
 .quickRecordBtn.incomeQuick .quickIcon{background:#49C77C}
 .quickRecordBtn.expenseQuick .quickIcon{background:#F08368}
 @media(max-width:650px){.balanceStatsBtn{width:100%;font-size:15px}.quickRecordRow{gap:10px}.quickRecordBtn{font-size:15px;padding:12px 6px}}
+
+/* Smaller quick-action buttons */
+#accountDetail .balanceStatsBtn{
+  padding:8px 13px;
+  border-radius:11px;
+  font-size:14px;
+  margin-top:8px;
+}
+#accountDetail .quickRecordRow{
+  gap:9px;
+  margin:10px 0 14px;
+}
+#accountDetail .quickRecordBtn{
+  padding:8px 7px;
+  border-radius:12px;
+  font-size:14px;
+}
+#accountDetail .quickRecordBtn .quickIcon{
+  width:25px;
+  height:25px;
+  margin-right:6px;
+  font-size:18px;
+}
+@media(max-width:650px){
+  #accountDetail .balanceStatsBtn{font-size:14px;padding:8px 12px}
+  #accountDetail .quickRecordBtn{font-size:14px;padding:8px 5px}
+}
+
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
