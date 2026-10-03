@@ -517,12 +517,50 @@ function exportCategoryAnalysisExcel(){
  let account=String(current).replace(/[\\/:*?\"<>|]/g,"-");
  XLSX.writeFile(wb,`${account}-${label}-分类分析.xlsx`,{compression:true});
 }
+function shareCategoryAnalysisWhatsApp(){
+ if(!current)return;
+ let all=getAnalysisAllRows();
+ let rows=categoryAnalysisCategory==="全部"||categoryAnalysisCategory==="Currency"
+   ? all
+   : all.filter(r=>((r.category||"").trim()||"未分类")===categoryAnalysisCategory);
+ rows=[...rows].sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b._i-a._i);
+ let totals=analysisTotalsByCurrency(rows);
+ let lines=[];
+ lines.push(`${current}｜${categoryAnalysisCategory}`);
+ lines.push("");
+ Object.keys(totals).sort().forEach(c=>{
+   let v=totals[c], bal=(v.income||0)-(v.expense||0);
+   lines.push(`${c}`);
+   lines.push(`收入：${money(v.income||0,c)}`);
+   lines.push(`支出：${money(v.expense||0,c)}`);
+   lines.push(`余额：${money(bal,c)}`);
+   lines.push("");
+ });
+ if(rows.length){
+   lines.push("详细资料：");
+   rows.forEach(r=>{
+     let d=(r.date||"").split("-").reverse().join("/");
+     let t=r.type==="income"?"收入":"支出";
+     let cat=(r.category||"").trim()||"未分类";
+     let c=r.currency||"MYR";
+     let sign=r.type==="income"?"+":"-";
+     let line=`${d}｜${t}｜${cat}｜${c}｜${sign}${money(r.amount,c)}`;
+     if((r.remark||"").trim()) line+=`｜${(r.remark||"").trim()}`;
+     lines.push(line);
+   });
+ }else{
+   lines.push("没有相关记录");
+ }
+ let text=lines.join("\n");
+ let url=`https://wa.me/?text=${encodeURIComponent(text)}`;
+ window.location.href=url;
+}
 function renderCategoryAnalysis(){
  let all=getAnalysisAllRows();
  let cats=[...new Set(all.map(r=>(r.category||"").trim()||"未分类"))].sort((a,b)=>a.localeCompare(b,"zh"));
  let options=["全部","Currency",...cats];
  if(!options.includes(categoryAnalysisCategory))categoryAnalysisCategory="全部";
- let h=`<div class="analysisControls" style="grid-template-columns:1fr"><div><label>分类</label><select onchange="setAnalysisCategory(this.value)">${options.map(c=>`<option value="${esc(c)}" ${categoryAnalysisCategory===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div></div><div style="display:flex;justify-content:flex-end;margin:-2px 0 14px"><button class="btn" onclick="exportCategoryAnalysisExcel()">📥 Export Excel</button></div>`;
+ let h=`<div class="analysisControls" style="grid-template-columns:1fr"><div><label>分类</label><select onchange="setAnalysisCategory(this.value)">${options.map(c=>`<option value="${esc(c)}" ${categoryAnalysisCategory===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div></div><div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:-2px 0 14px"><button class="btn" onclick="shareCategoryAnalysisWhatsApp()">WhatsApp 发送</button><button class="btn" onclick="exportCategoryAnalysisExcel()">📥 Export Excel</button></div>`;
  if(categoryAnalysisCategory==="全部"){
    let totals=analysisTotalsByCurrency(all);
    let currencies=Object.keys(totals).sort();
