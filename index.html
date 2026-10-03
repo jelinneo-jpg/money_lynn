@@ -140,6 +140,17 @@ body.modal-lock .accountWrap{visibility:hidden}
 @media(max-width:650px){.analysisControls,.currencyAnalysisGrid{grid-template-columns:1fr}#categoryAnalysisContent .analysisDetailTable{font-size:12px}#categoryAnalysisContent .analysisDetailTable th{font-size:12px}#categoryAnalysisContent .analysisDetailTable th,#categoryAnalysisContent .analysisDetailTable td{padding:10px 4px}}
 
 .recordGear{border:0;background:none;cursor:pointer;font-size:17px;padding:5px}.recordActions{position:fixed;z-index:12000;min-width:150px;background:#fffaf6;border:1px solid #edd3c4;border-radius:14px;padding:7px;box-shadow:0 12px 30px #5b38252b;display:none}.recordActions.show{display:block}.recordActions button{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:10px;font-size:15px;color:#49342b}.recordActions button:active{background:#f9e9df}
+
+/* 2026-10-03 首页右上角按钮与账户区域位置 */
+.appHeaderActions{display:flex;flex-direction:column;align-items:center;gap:12px;align-self:flex-start;margin-top:-4px}
+.appHeaderSettings{border:0;background:transparent;color:#795B4E;font-size:14px;cursor:pointer;white-space:nowrap;padding:5px 8px}
+.accountHomeToolbar{margin-top:-6px!important;margin-bottom:10px!important}
+@media(max-width:650px){
+  .appHeaderActions{gap:12px;margin-top:-7px}
+  .appHeaderExit{transform:translateY(-6px)}
+  .appHeaderSettings{margin-top:-2px}
+  .accountHomeToolbar{margin-top:-12px!important}
+}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -164,10 +175,12 @@ body.modal-lock .accountWrap{visibility:hidden}
       <div class="appHeaderSub">记录生活 · 简单记账 ❤️</div>
     </div>
   </div>
-  <button class="appHeaderExit" onclick="logoutApp()">退出</button>
+  <div class="appHeaderActions">
+    <button class="appHeaderExit" onclick="logoutApp()">退出</button>
+    <button class="appHeaderSettings" onclick="openSettings()">⚙️ 设置</button>
+  </div>
 </div>
-<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn light" onclick="openSettings()">⚙️ 设置</button></div>
-<div id="accountHome"><div class="toolbar" style="margin-top:-10px;margin-bottom:10px">
+<div id="accountHome"><div class="toolbar accountHomeToolbar">
 <div><b>我的账户</b></div>
 <button class="btn" onclick="addAccount()">＋ 新增账户</button>
 </div>
