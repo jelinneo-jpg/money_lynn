@@ -127,7 +127,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 
 /* 2026-10-03 分类分析 */
 .analysisBtn{display:block;width:100%;margin-top:8px;padding:8px 13px;border:0;border-radius:11px;background:#F2D5C4;color:#6b4637;font-size:14px;font-weight:700;text-align:left;cursor:pointer}
-.analysisControls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.analysisSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.analysisSummary>div{background:#fff0e5;border-radius:12px;padding:10px}.analysisSummary small{display:block;color:#8a7063;margin-bottom:5px}.categoryCard{border:1px solid #f0d8ca;border-radius:14px;background:#fffaf7;margin:9px 0;overflow:hidden}.categoryHead{width:100%;border:0;background:transparent;padding:13px;text-align:left;cursor:pointer;color:#49342b}.categoryTitle{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:700}.categoryNums{font-size:13px;color:#7b665b;margin-top:7px;line-height:1.6}.categoryDetail{display:none;border-top:1px solid #f0e3da;padding:0 12px 10px}.categoryCard.open .categoryDetail{display:block}@media(max-width:650px){.analysisControls,.analysisSummary{grid-template-columns:1fr}.categoryDetail{overflow-x:auto}}
+.analysisControls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.analysisSummary{display:grid;gap:8px;margin-bottom:14px}.analysisSummary>div{background:#fff0e5;border-radius:12px;padding:13px}.analysisSummary small{display:block;color:#8a7063;margin-bottom:5px}.currencyAnalysisGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.currencyAnalysisCard{background:#fff0e5;border-radius:14px;padding:13px}.currencyAnalysisCard small{display:block;color:#8a7063;margin-bottom:6px}.currencyAnalysisCard b{display:block;font-size:20px;margin-bottom:7px}.currencyAnalysisCard div{font-size:13px;line-height:1.6;color:#765f53}@media(max-width:650px){.analysisControls,.currencyAnalysisGrid{grid-template-columns:1fr}#categoryAnalysisContent table{min-width:650px}}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -377,33 +377,48 @@ function changePassword(){
 const BACKUPKEY="zhLedgerLastBackup";
 const DEFAULT_NAMES=["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"];
 const DEFAULT_ICONS=["💳","💳","👩","👩","👨","👨","🏠"];
-let categoryAnalysisPeriod="all",categoryAnalysisCurrency="ALL";
-function analysisRows(){
- let rows=(data[current]||[]).map((r,i)=>({...r,_i:i}));
- if(categoryAnalysisPeriod!=="all")rows=rows.filter(r=>(r.date||"").slice(0,7)===categoryAnalysisPeriod);
- if(categoryAnalysisCurrency!=="ALL")rows=rows.filter(r=>(r.currency||"MYR")===categoryAnalysisCurrency);
+let categoryAnalysisCategory="Currency";
+function getAnalysisAllRows(){
+ let rows=[];
+ names.forEach(n=>(data[n]||[]).forEach((r,i)=>rows.push({...r,_account:n,_i:i})));
  return rows;
 }
-function analysisMoneyMap(rows,kind){let out={};rows.filter(r=>!kind||r.type===kind).forEach(r=>{let c=r.currency||"MYR";out[c]=(out[c]||0)+(Number(r.amount)||0)});return out}
-function analysisMapText(map){let a=Object.entries(map).filter(([,v])=>v!==0).map(([c,v])=>money(v,c));return a.length?a.join(" / "):money(0,categoryAnalysisCurrency==="ALL"?"MYR":categoryAnalysisCurrency)}
-function analysisBalanceText(rows){let out={};rows.forEach(r=>{let c=r.currency||"MYR";out[c]=(out[c]||0)+(r.type==="income"?1:-1)*(Number(r.amount)||0)});return analysisMapText(out)}
 function openCategoryAnalysis(){
- if(!current)return;
- categoryAnalysisPeriod="all";categoryAnalysisCurrency="ALL";renderCategoryAnalysis();lockScroll();document.getElementById("categoryAnalysisModal").classList.add("show");
+ categoryAnalysisCategory="Currency";
+ renderCategoryAnalysis();
+ lockScroll();
+ document.getElementById("categoryAnalysisModal").classList.add("show");
 }
 function closeCategoryAnalysis(){document.getElementById("categoryAnalysisModal").classList.remove("show");unlockScroll()}
-function setAnalysisPeriod(v){categoryAnalysisPeriod=v;renderCategoryAnalysis()}
-function setAnalysisCurrency(v){categoryAnalysisCurrency=v;renderCategoryAnalysis()}
-function toggleCategoryCard(id){document.getElementById(id)?.classList.toggle("open")}
+function setAnalysisCategory(v){categoryAnalysisCategory=v;renderCategoryAnalysis()}
+function analysisTotalsByCurrency(rows){
+ let out={};
+ rows.forEach(r=>{let c=r.currency||"MYR";out[c]??={income:0,expense:0};if(r.type==="income"||r.type==="expense")out[c][r.type]+=(Number(r.amount)||0)});
+ return out;
+}
+function analysisRowsTable(rows){
+ rows=[...rows].sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b._i-a._i);
+ if(!rows.length)return `<div class="empty">还没有相关记录</div>`;
+ return `<div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>账户</th><th>类型</th><th>分类</th><th>Currency</th><th>金额</th><th>REMARK</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${(r.date||"").split("-").reverse().join("/")}</td><td>${esc(r._account)}</td><td>${r.type==="income"?"收入":"支出"}</td><td>${esc((r.category||"").trim()||"未分类")}</td><td>${esc(r.currency||"MYR")}</td><td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`;
+}
 function renderCategoryAnalysis(){
- let all=(data[current]||[]), months=[...new Set(all.map(r=>(r.date||"").slice(0,7)).filter(Boolean))].sort().reverse();
- let currencies=[...new Set(all.map(r=>r.currency||"MYR"))].sort();
- let rows=analysisRows(),groups={};
- rows.forEach(r=>{let cat=(r.category||"").trim()||"未分类";(groups[cat]??=[]).push(r)});
- let cats=Object.entries(groups).sort((a,b)=>{let ae=[...analysisMoneyMap(a[1],"expense").values()].reduce((x,y)=>x+y,0),be=[...analysisMoneyMap(b[1],"expense").values()].reduce((x,y)=>x+y,0);return be-ae||a[0].localeCompare(b[0],"zh")});
- let h=`<div class="analysisControls"><div><label>期间</label><select onchange="setAnalysisPeriod(this.value)"><option value="all" ${categoryAnalysisPeriod==="all"?"selected":""}>全部记录</option>${months.map(m=>`<option value="${m}" ${categoryAnalysisPeriod===m?"selected":""}>${m.slice(0,4)}年${Number(m.slice(5,7))}月</option>`).join("")}</select></div><div><label>币种</label><select onchange="setAnalysisCurrency(this.value)"><option value="ALL" ${categoryAnalysisCurrency==="ALL"?"selected":""}>全部币种（分开显示）</option>${currencies.map(c=>`<option value="${c}" ${categoryAnalysisCurrency===c?"selected":""}>${c}</option>`).join("")}</select></div></div>`;
- h+=`<div class="analysisSummary"><div><small>收入</small><b class="income">${analysisMapText(analysisMoneyMap(rows,"income"))}</b></div><div><small>支出</small><b class="expense">${analysisMapText(analysisMoneyMap(rows,"expense"))}</b></div><div><small>余额</small><b>${analysisBalanceText(rows)}</b></div></div><h3 style="margin:10px 0">根据分类</h3>`;
- h+=cats.length?cats.map(([cat,rs],idx)=>{rs.sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b._i-a._i);let id="catAnalysis"+idx;return `<div class="categoryCard" id="${id}"><button class="categoryHead" onclick="toggleCategoryCard('${id}')"><div class="categoryTitle"><span>${esc(cat)}</span><span>查看详细资料 ›</span></div><div class="categoryNums">收入：<span class="income">${analysisMapText(analysisMoneyMap(rs,"income"))}</span><br>支出：<span class="expense">${analysisMapText(analysisMoneyMap(rs,"expense"))}</span><br>余额：<b>${analysisBalanceText(rs)}</b>　·　${rs.length} 笔</div></button><div class="categoryDetail"><table><thead><tr><th>日期</th><th>类型</th><th>账户</th><th>币种</th><th>金额</th><th>REMARK</th></tr></thead><tbody>${rs.map(r=>`<tr><td>${(r.date||"").split("-").reverse().join("/")}</td><td>${r.type==="income"?"收入":"支出"}</td><td>${esc(current)}</td><td>${r.currency||"MYR"}</td><td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div></div>`}).join(""):`<div class="empty">这个条件下还没有记录</div>`;
+ let all=getAnalysisAllRows();
+ let cats=[...new Set(all.map(r=>(r.category||"").trim()||"未分类"))].sort((a,b)=>a.localeCompare(b,"zh"));
+ let options=["Currency",...cats];
+ if(!options.includes(categoryAnalysisCategory))categoryAnalysisCategory="Currency";
+ let h=`<div class="analysisControls" style="grid-template-columns:1fr"><div><label>分类</label><select onchange="setAnalysisCategory(this.value)">${options.map(c=>`<option value="${esc(c)}" ${categoryAnalysisCategory===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div></div>`;
+ if(categoryAnalysisCategory==="Currency"){
+   let totals=analysisTotalsByCurrency(all);
+   let currencies=Object.keys(totals).sort();
+   h+=`<div class="analysisSummary">${currencies.map(c=>{let v=totals[c],bal=v.income-v.expense;return `<div><small>${c} 余额</small><b style="font-size:25px">${money(bal,c)}</b><div style="font-size:13px;color:#8a7063;margin-top:6px">收入 ${money(v.income,c)}　·　支出 ${money(v.expense,c)}</div></div>`}).join("")}</div>`;
+   h+=`<h3 style="margin:12px 0 8px">全部详细资料</h3>${analysisRowsTable(all)}`;
+ }else{
+   let rows=all.filter(r=>((r.category||"").trim()||"未分类")===categoryAnalysisCategory);
+   let totals=analysisTotalsByCurrency(rows);
+   let currencies=Object.keys(totals).sort();
+   h+=`<div class="analysisSummary">${currencies.map(c=>{let v=totals[c],bal=v.income-v.expense;return `<div><small>${esc(categoryAnalysisCategory)} · ${c} 余额</small><b style="font-size:25px">${money(bal,c)}</b><div style="font-size:13px;color:#8a7063;margin-top:6px">收入 ${money(v.income,c)}　·　支出 ${money(v.expense,c)}</div></div>`}).join("")}</div>`;
+   h+=`<h3 style="margin:12px 0 8px">全部详细资料</h3>${analysisRowsTable(rows)}`;
+ }
  document.getElementById("categoryAnalysisContent").innerHTML=h;
 }
 function openStats(){
