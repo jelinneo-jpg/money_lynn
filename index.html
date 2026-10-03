@@ -216,6 +216,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 <div id="recordActions" class="recordActions"><button onclick="recordActionEdit()">✏️ 编辑记录</button><button onclick="recordActionDelete()">🗑 删除记录</button></div>
 <div class="modal" id="editRecordModal"><div class="box"><h2 style="margin-top:0">编辑记录</h2><label>日期</label><input id="editRecordDate" disabled><label>类型</label><input id="editRecordType" disabled><div class="row"><div><label>币种（CURRENCY）</label><select id="editRecordCurrency"><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="CNY">🇨🇳 CNY</option></select></div><div><label>金额</label><input id="editRecordAmount" type="text" inputmode="numeric" oninput="formatMoneyTyping(this)"></div></div><label>分类</label><input id="editRecordCategory"><label>备注（REMARK）</label><input id="editRecordRemark"><div class="ma"><button class="btn light" onclick="closeEditRecord()">取消</button><button class="btn" onclick="requestSaveRecord()">保存</button></div></div></div>
 <div class="modal" id="confirmRecordSaveModal"><div class="box"><h2 style="margin-top:0">确认保存修改？</h2><div style="color:#8a7063;line-height:1.6">请确认以上资料是否正确。<br>只有按「确认保存」后才会更新这笔记录。</div><div class="ma"><button class="btn light" onclick="backToEditRecord()">取消</button><button class="btn" onclick="confirmSaveRecord()">确认保存</button></div></div></div>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 let names=JSON.parse(localStorage.getItem("zhLedgerAccounts")||'["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"]');
 let icons=JSON.parse(localStorage.getItem("zhLedgerIcons")||'["💳","💳","👩","👩","👨","👨","🏠"]');
@@ -414,27 +415,54 @@ function analysisTotalsByCurrency(rows){
 function analysisRowsTable(rows){
  rows=[...rows].sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b._i-a._i);
  if(!rows.length)return `<div class="empty">还没有相关记录</div>`;
- return `<div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>账户</th><th>类型</th><th>分类</th><th>Currency</th><th>金额</th><th>备注</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${(r.date||"").split("-").reverse().join("/")}</td><td>${esc(r._account)}</td><td>${r.type==="income"?"收入":"支出"}</td><td>${esc((r.category||"").trim()||"未分类")}</td><td>${esc(r.currency||"MYR")}</td><td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`;
+ return `<div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>账户</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>备注</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${(r.date||"").split("-").reverse().join("/")}</td><td>${esc(r._account)}</td><td>${r.type==="income"?"收入":"支出"}</td><td>${esc((r.category||"").trim()||"未分类")}</td><td>${esc(r.currency||"MYR")}</td><td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function exportCategoryAnalysisExcel(){
  if(!current)return;
+ if(typeof XLSX==="undefined"){
+   alert("Excel 导出组件暂时没有载入，请确认网络连接后刷新页面再试。");
+   return;
+ }
  let all=getAnalysisAllRows();
  let rows=categoryAnalysisCategory==="全部"||categoryAnalysisCategory==="Currency"
    ? all
    : all.filter(r=>((r.category||"").trim()||"未分类")===categoryAnalysisCategory);
  rows=[...rows].sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b._i-a._i);
  let totals=analysisTotalsByCurrency(rows);
- let safe=x=>String(x??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
- let summary=Object.keys(totals).sort().map(c=>{
-   let v=totals[c],bal=v.income-v.expense;
-   return `<tr><td>${safe(c)}</td><td>${v.income.toFixed(2)}</td><td>${v.expense.toFixed(2)}</td><td>${bal.toFixed(2)}</td></tr>`;
- }).join("");
- let detail=rows.map(r=>`<tr><td>${safe((r.date||"").split("-").reverse().join("/"))}</td><td>${safe(r.type==="income"?"收入":"支出")}</td><td>${safe((r.category||"").trim()||"未分类")}</td><td>${safe(r.currency||"MYR")}</td><td>${Number(r.amount||0).toFixed(2)}</td><td>${safe(r.remark||"")}</td></tr>`).join("");
- let html=`<!doctype html><html><head><meta charset="utf-8"></head><body><table border="1"><tr><th colspan="4">账户：${safe(current)}</th></tr><tr><th colspan="4">分类分析：${safe(categoryAnalysisCategory)}</th></tr><tr><th>Currency</th><th>收入</th><th>支出</th><th>余额</th></tr>${summary}</table><br><table border="1"><tr><th>日期</th><th>类型</th><th>分类</th><th>Currency</th><th>金额</th><th>备注</th></tr>${detail}</table></body></html>`;
- let blob=new Blob(["\ufeff",html],{type:"application/vnd.ms-excel;charset=utf-8"});
- let a=document.createElement("a");a.href=URL.createObjectURL(blob);
+
+ // Sheet 1: 汇总
+ let summaryData=[
+   ["账户", current],
+   ["分类分析", categoryAnalysisCategory],
+   [],
+   ["Currency","收入","支出","余额"]
+ ];
+ Object.keys(totals).sort().forEach(c=>{
+   let v=totals[c];
+   summaryData.push([c, Number(v.income||0), Number(v.expense||0), Number((v.income-v.expense)||0)]);
+ });
+ let wsSummary=XLSX.utils.aoa_to_sheet(summaryData);
+ wsSummary["!cols"]=[{wch:16},{wch:18},{wch:18},{wch:18}];
+
+ // Sheet 2: 详细资料
+ let detailData=[["日期","类型","分类","Currency","金额","备注"]];
+ rows.forEach(r=>detailData.push([
+   (r.date||"").split("-").reverse().join("/"),
+   r.type==="income"?"收入":"支出",
+   (r.category||"").trim()||"未分类",
+   r.currency||"MYR",
+   Number(r.amount||0),
+   r.remark||""
+ ]));
+ let wsDetail=XLSX.utils.aoa_to_sheet(detailData);
+ wsDetail["!cols"]=[{wch:13},{wch:9},{wch:18},{wch:11},{wch:16},{wch:30}];
+
+ let wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,wsSummary,"汇总");
+ XLSX.utils.book_append_sheet(wb,wsDetail,"详细资料");
  let label=categoryAnalysisCategory.replace(/[\\/:*?\"<>|]/g,"-");
- a.download=`${current}-${label}-分类分析.xls`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ let account=String(current).replace(/[\\/:*?\"<>|]/g,"-");
+ XLSX.writeFile(wb,`${account}-${label}-分类分析.xlsx`,{compression:true});
 }
 function renderCategoryAnalysis(){
  let all=getAnalysisAllRows();
