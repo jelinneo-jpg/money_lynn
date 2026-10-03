@@ -159,6 +159,19 @@ body.modal-lock .accountWrap{visibility:hidden}
   .appHeaderSettings{margin-top:-2px!important;}
   .accountHomeToolbar{margin-top:-4px!important;}
 }
+
+/* 2026-10-03 首页最终微调：设置下移；顶部固定高度，避免下拉时橙色区域被拉长 */
+html,body{overscroll-behavior-y:none;}
+@media(max-width:650px){
+  .appHeader{
+    height:138px!important;
+    min-height:138px!important;
+    max-height:138px!important;
+    overflow:hidden!important;
+    flex:none!important;
+  }
+  .appHeaderSettings{margin-top:5px!important;}
+}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
