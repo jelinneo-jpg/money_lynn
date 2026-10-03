@@ -379,9 +379,8 @@ const DEFAULT_NAMES=["UOB（我）","UOB（老公）","妈妈（马来西亚）"
 const DEFAULT_ICONS=["💳","💳","👩","👩","👨","👨","🏠"];
 let categoryAnalysisCategory="Currency";
 function getAnalysisAllRows(){
- let rows=[];
- names.forEach(n=>(data[n]||[]).forEach((r,i)=>rows.push({...r,_account:n,_i:i})));
- return rows;
+ if(!current)return [];
+ return (data[current]||[]).map((r,i)=>({...r,_account:current,_i:i}));
 }
 function openCategoryAnalysis(){
  categoryAnalysisCategory="Currency";
