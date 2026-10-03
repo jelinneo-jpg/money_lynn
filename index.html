@@ -151,6 +151,14 @@ body.modal-lock .accountWrap{visibility:hidden}
   .appHeaderSettings{margin-top:-2px}
   .accountHomeToolbar{margin-top:-12px!important}
 }
+
+/* 2026-10-03 首页位置微调：退出/设置下移，账户区稍微下移 */
+@media(max-width:650px){
+  .appHeaderActions{margin-top:9px!important;gap:12px!important;}
+  .appHeaderExit{transform:none!important;}
+  .appHeaderSettings{margin-top:-2px!important;}
+  .accountHomeToolbar{margin-top:-4px!important;}
+}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
