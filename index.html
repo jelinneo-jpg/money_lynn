@@ -416,12 +416,32 @@ function analysisRowsTable(rows){
  if(!rows.length)return `<div class="empty">还没有相关记录</div>`;
  return `<div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>账户</th><th>类型</th><th>分类</th><th>Currency</th><th>金额</th><th>备注</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${(r.date||"").split("-").reverse().join("/")}</td><td>${esc(r._account)}</td><td>${r.type==="income"?"收入":"支出"}</td><td>${esc((r.category||"").trim()||"未分类")}</td><td>${esc(r.currency||"MYR")}</td><td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`;
 }
+function exportCategoryAnalysisExcel(){
+ if(!current)return;
+ let all=getAnalysisAllRows();
+ let rows=categoryAnalysisCategory==="全部"||categoryAnalysisCategory==="Currency"
+   ? all
+   : all.filter(r=>((r.category||"").trim()||"未分类")===categoryAnalysisCategory);
+ rows=[...rows].sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b._i-a._i);
+ let totals=analysisTotalsByCurrency(rows);
+ let safe=x=>String(x??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+ let summary=Object.keys(totals).sort().map(c=>{
+   let v=totals[c],bal=v.income-v.expense;
+   return `<tr><td>${safe(c)}</td><td>${v.income.toFixed(2)}</td><td>${v.expense.toFixed(2)}</td><td>${bal.toFixed(2)}</td></tr>`;
+ }).join("");
+ let detail=rows.map(r=>`<tr><td>${safe((r.date||"").split("-").reverse().join("/"))}</td><td>${safe(r.type==="income"?"收入":"支出")}</td><td>${safe((r.category||"").trim()||"未分类")}</td><td>${safe(r.currency||"MYR")}</td><td>${Number(r.amount||0).toFixed(2)}</td><td>${safe(r.remark||"")}</td></tr>`).join("");
+ let html=`<!doctype html><html><head><meta charset="utf-8"></head><body><table border="1"><tr><th colspan="4">账户：${safe(current)}</th></tr><tr><th colspan="4">分类分析：${safe(categoryAnalysisCategory)}</th></tr><tr><th>Currency</th><th>收入</th><th>支出</th><th>余额</th></tr>${summary}</table><br><table border="1"><tr><th>日期</th><th>类型</th><th>分类</th><th>Currency</th><th>金额</th><th>备注</th></tr>${detail}</table></body></html>`;
+ let blob=new Blob(["\ufeff",html],{type:"application/vnd.ms-excel;charset=utf-8"});
+ let a=document.createElement("a");a.href=URL.createObjectURL(blob);
+ let label=categoryAnalysisCategory.replace(/[\\/:*?\"<>|]/g,"-");
+ a.download=`${current}-${label}-分类分析.xls`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 function renderCategoryAnalysis(){
  let all=getAnalysisAllRows();
  let cats=[...new Set(all.map(r=>(r.category||"").trim()||"未分类"))].sort((a,b)=>a.localeCompare(b,"zh"));
  let options=["全部","Currency",...cats];
  if(!options.includes(categoryAnalysisCategory))categoryAnalysisCategory="全部";
- let h=`<div class="analysisControls" style="grid-template-columns:1fr"><div><label>分类</label><select onchange="setAnalysisCategory(this.value)">${options.map(c=>`<option value="${esc(c)}" ${categoryAnalysisCategory===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div></div>`;
+ let h=`<div class="analysisControls" style="grid-template-columns:1fr"><div><label>分类</label><select onchange="setAnalysisCategory(this.value)">${options.map(c=>`<option value="${esc(c)}" ${categoryAnalysisCategory===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div></div><div style="display:flex;justify-content:flex-end;margin:-2px 0 14px"><button class="btn" onclick="exportCategoryAnalysisExcel()">📥 Export Excel</button></div>`;
  if(categoryAnalysisCategory==="全部"){
    let totals=analysisTotalsByCurrency(all);
    let currencies=Object.keys(totals).sort();
