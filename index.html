@@ -129,11 +129,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 .analysisBtn{display:block;width:100%;margin-top:8px;padding:8px 13px;border:0;border-radius:11px;background:#F2D5C4;color:#6b4637;font-size:14px;font-weight:700;text-align:left;cursor:pointer}
 .analysisControls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.analysisSummary{display:grid;gap:8px;margin-bottom:14px}.analysisSummary>div{background:#fff0e5;border-radius:12px;padding:13px}.analysisSummary small{display:block;color:#8a7063;margin-bottom:5px}.currencyAnalysisGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.currencyAnalysisCard{background:#fff0e5;border-radius:14px;padding:13px}.currencyAnalysisCard small{display:block;color:#8a7063;margin-bottom:6px}.currencyAnalysisCard b{display:block;font-size:20px;margin-bottom:7px}.currencyAnalysisCard div{font-size:13px;line-height:1.6;color:#765f53}@media(max-width:650px){.analysisControls,.currencyAnalysisGrid{grid-template-columns:1fr}#categoryAnalysisContent table{min-width:650px}}
 
-/* 当月记录：设定 / 编辑 / 删除 */
-.recordGear{border:0;background:none;cursor:pointer;font-size:18px;padding:6px;color:#765f53}
-.recordActionBtns{display:grid;gap:10px;margin-top:14px}
-.recordActionBtns .btn{text-align:left;padding:14px 16px}
-.readOnlyField{background:#f4f1ef;color:#765f53}
+.recordGear{border:0;background:none;cursor:pointer;font-size:17px;padding:5px}.recordActions{position:fixed;z-index:12000;min-width:150px;background:#fffaf6;border:1px solid #edd3c4;border-radius:14px;padding:7px;box-shadow:0 12px 30px #5b38252b;display:none}.recordActions.show{display:block}.recordActions button{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:10px;font-size:15px;color:#49342b}.recordActions button:active{background:#f9e9df}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -190,24 +186,6 @@ body.modal-lock .accountWrap{visibility:hidden}
 </div></div>
 <div class="modal" id="statsModal"><div class="box" style="width:min(620px,100%)"><h2 style="margin-top:0">📊 收入 / 支出统计</h2><div id="statsContent"></div><div class="ma"><button class="btn light" onclick="closeStats()">关闭</button></div></div></div>
 <div class="modal" id="categoryAnalysisModal"><div class="box" style="width:min(760px,100%)"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 style="margin:0">🔎 分类分析</h2><button class="btn light" onclick="closeCategoryAnalysis()">关闭</button></div><div id="categoryAnalysisContent" style="margin-top:14px"></div></div></div>
-<div class="modal" id="recordActionModal"><div class="box" style="width:min(390px,100%)">
-<h2 style="margin-top:0">⚙️ 记录设定</h2>
-<div class="recordActionBtns">
-<button class="btn light" onclick="openRecordEdit()">✏️ 编辑记录</button>
-<button class="btn" style="background:#b54b3a" onclick="deleteRecordFromMenu()">🗑 删除记录</button>
-</div>
-<div class="ma"><button class="btn light" onclick="closeRecordAction()">取消</button></div>
-</div></div>
-<div class="modal" id="recordEditModal"><div class="box" style="width:min(450px,100%)">
-<h2 style="margin-top:0">✏️ 编辑记录</h2>
-<label>日期（不能修改）</label><input id="editRecordDate" class="readOnlyField" type="text" readonly>
-<label>类型（不能修改）</label><input id="editRecordType" class="readOnlyField" type="text" readonly>
-<label>币种</label><select id="editRecordCurrency"><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="CNY">🇨🇳 CNY</option></select>
-<label>金额</label><input id="editRecordAmount" type="text" inputmode="numeric" autocomplete="off" oninput="formatMoneyTyping(this)">
-<label>分类</label><input id="editRecordCategory" type="text">
-<label>备注</label><input id="editRecordRemark" type="text">
-<div class="ma"><button class="btn light" onclick="closeRecordEdit()">取消</button><button class="btn" onclick="confirmRecordEdit()">确认保存</button></div>
-</div></div>
 <div class="modal" id="settingsModal"><div class="box">
 <h2 style="margin-top:0">⚙️ 设置</h2>
 <div id="backupStatus" style="font-size:13px;color:#8a573d;background:#fff0e5;border-radius:12px;padding:12px;margin:12px 0"></div>
@@ -235,6 +213,9 @@ body.modal-lock .accountWrap{visibility:hidden}
 <button onclick="actionEdit()">✎ 编辑账户</button>
 <button onclick="actionDelete()">🗑 删除账户</button>
 </div>
+<div id="recordActions" class="recordActions"><button onclick="recordActionEdit()">✏️ 编辑记录</button><button onclick="recordActionDelete()">🗑 删除记录</button></div>
+<div class="modal" id="editRecordModal"><div class="box"><h2 style="margin-top:0">编辑记录</h2><label>日期</label><input id="editRecordDate" disabled><label>类型</label><input id="editRecordType" disabled><div class="row"><div><label>币种（CURRENCY）</label><select id="editRecordCurrency"><option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="CNY">🇨🇳 CNY</option></select></div><div><label>金额</label><input id="editRecordAmount" type="text" inputmode="numeric" oninput="formatMoneyTyping(this)"></div></div><label>分类</label><input id="editRecordCategory"><label>备注（REMARK）</label><input id="editRecordRemark"><div class="ma"><button class="btn light" onclick="closeEditRecord()">取消</button><button class="btn" onclick="requestSaveRecord()">保存</button></div></div></div>
+<div class="modal" id="confirmRecordSaveModal"><div class="box"><h2 style="margin-top:0">确认保存修改？</h2><div style="color:#8a7063;line-height:1.6">请确认以上资料是否正确。<br>只有按「确认保存」后才会更新这笔记录。</div><div class="ma"><button class="btn light" onclick="backToEditRecord()">取消</button><button class="btn" onclick="confirmSaveRecord()">确认保存</button></div></div></div>
 <script>
 let names=JSON.parse(localStorage.getItem("zhLedgerAccounts")||'["UOB（我）","UOB（老公）","妈妈（马来西亚）","妈妈（新加坡）","爸爸","UNCLE","新公寓"]');
 let icons=JSON.parse(localStorage.getItem("zhLedgerIcons")||'["💳","💳","👩","👩","👨","👨","🏠"]');
@@ -267,7 +248,7 @@ function render(){
  }
  let t=totals(current); title.textContent=current; income.textContent=multi(t,"income");expense.textContent=multi(t,"expense");balance.textContent=multibal(t);
  let thisMonth=new Date().toISOString().slice(0,7); let rows=data[current].map((r,i)=>({...r,_i:i})).filter(r=>(r.date||"").slice(0,7)===thisMonth).filter(r=>filter=="all"||r.type==filter).sort((a,b)=>b.date.localeCompare(a.date)||b._i-a._i);
- list.innerHTML=rows.length?`<table><thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>备注</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.date.split("-").reverse().join("/")}</td><td>${r.type=="income"?"收入":"支出"}</td><td>${esc(r.category)}</td><td>${r.currency||"MYR"}</td><td class=${r.type}>${r.type=="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark)}</td><td><button class="recordGear" onclick="openRecordAction(${r._i})" aria-label="记录设定">⚙️</button></td></tr>`).join("")}</tbody></table>`:`<div class=empty>本月还没有记录<br>旧月份资料可在「📊 查看收入 / 支出统计」查看</div>`;
+ list.innerHTML=rows.length?`<table><thead><tr><th>日期</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>备注</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.date.split("-").reverse().join("/")}</td><td>${r.type=="income"?"收入":"支出"}</td><td>${esc(r.category)}</td><td>${r.currency||"MYR"}</td><td class=${r.type}>${r.type=="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark)}</td><td><button class="recordGear" onclick="event.stopPropagation();openRecordMenu(${r._i},this)">⚙️</button></td></tr>`).join("")}</tbody></table>`:`<div class=empty>本月还没有记录<br>旧月份资料可在「📊 查看收入 / 支出统计」查看</div>`;
  localStorage.setItem("zhLedger",JSON.stringify(data));localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
 }
 function pick(i){
@@ -293,60 +274,18 @@ function openM(){date.value=new Date().toISOString().slice(0,10);amount.value=""
  lockScroll();modal.classList.add("show")}
 function closeM(){modal.classList.remove("show");unlockScroll()}
 function save(){let a=Number(amount.value);if(!date.value||!a){alert("请填写日期和金额");return}if(!currency.value){alert("请选择币种（CURRENCY）");return}data[current].push({date:date.value,type:type.value,currency:currency.value,amount:a,category:category.value||"未分类",remark:remark.value||""});closeM();render()}
+let recordMenuIndex=-1,editingRecordIndex=-1;
+function openRecordMenu(i,btn){recordMenuIndex=i;const m=document.getElementById("recordActions");const r=btn.getBoundingClientRect();m.style.top=(r.bottom+5)+"px";m.style.left=Math.max(10,Math.min(window.innerWidth-160,r.right-150))+"px";m.classList.add("show")}
+function closeRecordMenu(){document.getElementById("recordActions").classList.remove("show")}
+function recordActionEdit(){let i=recordMenuIndex;closeRecordMenu();openEditRecord(i)}
+function recordActionDelete(){let i=recordMenuIndex;closeRecordMenu();del(i)}
+function openEditRecord(i){let r=data[current]&&data[current][i];if(!r)return;editingRecordIndex=i;editRecordDate.value=(r.date||"").split("-").reverse().join("/");editRecordType.value=r.type==="income"?"收入":"支出";editRecordCurrency.value=r.currency||"MYR";editRecordAmount.value=Number(r.amount||0).toFixed(2);editRecordCategory.value=r.category||"";editRecordRemark.value=r.remark||"";lockScroll();document.getElementById("editRecordModal").classList.add("show")}
+function closeEditRecord(){document.getElementById("editRecordModal").classList.remove("show");editingRecordIndex=-1;unlockScroll()}
+function requestSaveRecord(){let a=Number(editRecordAmount.value);if(!a){alert("请填写金额");return}if(!editRecordCurrency.value){alert("请选择币种（CURRENCY）");return}document.getElementById("editRecordModal").classList.remove("show");document.getElementById("confirmRecordSaveModal").classList.add("show")}
+function backToEditRecord(){document.getElementById("confirmRecordSaveModal").classList.remove("show");document.getElementById("editRecordModal").classList.add("show")}
+function confirmSaveRecord(){if(editingRecordIndex<0)return;let r=data[current][editingRecordIndex];r.currency=editRecordCurrency.value;r.amount=Number(editRecordAmount.value);r.category=editRecordCategory.value.trim()||"未分类";r.remark=editRecordRemark.value||"";localStorage.setItem("zhLedger",JSON.stringify(data));document.getElementById("confirmRecordSaveModal").classList.remove("show");editingRecordIndex=-1;unlockScroll();render()}
 function del(i){if(confirm("确定删除这笔记录吗？")){data[current].splice(i,1);render()}}
-let selectedRecordIndex=-1;
-function openRecordAction(i){
- selectedRecordIndex=i;
- lockScroll();
- document.getElementById("recordActionModal").classList.add("show");
-}
-function closeRecordAction(){
- document.getElementById("recordActionModal").classList.remove("show");
- unlockScroll();
-}
-function openRecordEdit(){
- if(selectedRecordIndex<0||!current||!data[current]||!data[current][selectedRecordIndex])return;
- const r=data[current][selectedRecordIndex];
- document.getElementById("recordActionModal").classList.remove("show");
- document.getElementById("editRecordDate").value=(r.date||"").split("-").reverse().join("/");
- document.getElementById("editRecordType").value=r.type==="income"?"收入":"支出";
- document.getElementById("editRecordCurrency").value=r.currency||"MYR";
- document.getElementById("editRecordAmount").value=Number(r.amount||0).toFixed(2);
- document.getElementById("editRecordCategory").value=r.category||"";
- document.getElementById("editRecordRemark").value=r.remark||"";
- document.getElementById("recordEditModal").classList.add("show");
-}
-function closeRecordEdit(){
- document.getElementById("recordEditModal").classList.remove("show");
- selectedRecordIndex=-1;
- unlockScroll();
-}
-function confirmRecordEdit(){
- if(selectedRecordIndex<0||!current||!data[current]||!data[current][selectedRecordIndex])return;
- const amount=Number(document.getElementById("editRecordAmount").value);
- if(!amount){alert("请填写金额");return}
- const r=data[current][selectedRecordIndex];
- r.currency=document.getElementById("editRecordCurrency").value||r.currency||"MYR";
- r.amount=amount;
- r.category=document.getElementById("editRecordCategory").value.trim()||"未分类";
- r.remark=document.getElementById("editRecordRemark").value||"";
- localStorage.setItem("zhLedger",JSON.stringify(data));
- document.getElementById("recordEditModal").classList.remove("show");
- selectedRecordIndex=-1;
- unlockScroll();
- render();
-}
-function deleteRecordFromMenu(){
- if(selectedRecordIndex<0||!current||!data[current]||!data[current][selectedRecordIndex])return;
- if(!confirm("确定删除这笔记录吗？"))return;
- data[current].splice(selectedRecordIndex,1);
- localStorage.setItem("zhLedger",JSON.stringify(data));
- document.getElementById("recordActionModal").classList.remove("show");
- selectedRecordIndex=-1;
- unlockScroll();
- render();
-}
-
+document.addEventListener("click",e=>{if(!e.target.closest("#recordActions")&&!e.target.closest(".recordGear"))closeRecordMenu()});
 function renderIconPicker(){
  const box=document.getElementById("iconPicker");
  box.innerHTML=cuteIconCatalog.map((x,i)=>`<button type="button" class="iconChoice ${selectedAccountIcon===x.key?'on':''}" onclick="selectAccountIcon(${i})"><div class="art"><img src="${x.src}" alt="${x.label}"></div><div class="lab">${x.label}</div></button>`).join("");
@@ -460,7 +399,7 @@ function getAnalysisAllRows(){
  return (data[current]||[]).map((r,i)=>({...r,_account:current,_i:i}));
 }
 function openCategoryAnalysis(){
- categoryAnalysisCategory="Currency";
+ categoryAnalysisCategory="全部";
  renderCategoryAnalysis();
  lockScroll();
  document.getElementById("categoryAnalysisModal").classList.add("show");
@@ -475,15 +414,20 @@ function analysisTotalsByCurrency(rows){
 function analysisRowsTable(rows){
  rows=[...rows].sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b._i-a._i);
  if(!rows.length)return `<div class="empty">还没有相关记录</div>`;
- return `<div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>账户</th><th>类型</th><th>分类</th><th>币种</th><th>金额</th><th>备注</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${(r.date||"").split("-").reverse().join("/")}</td><td>${esc(r._account)}</td><td>${r.type==="income"?"收入":"支出"}</td><td>${esc((r.category||"").trim()||"未分类")}</td><td>${esc(r.currency||"MYR")}</td><td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`;
+ return `<div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>账户</th><th>类型</th><th>分类</th><th>Currency</th><th>金额</th><th>备注</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${(r.date||"").split("-").reverse().join("/")}</td><td>${esc(r._account)}</td><td>${r.type==="income"?"收入":"支出"}</td><td>${esc((r.category||"").trim()||"未分类")}</td><td>${esc(r.currency||"MYR")}</td><td class="${r.type}">${r.type==="income"?"+":"-"}${money(r.amount,r.currency||"MYR")}</td><td>${esc(r.remark||"")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function renderCategoryAnalysis(){
  let all=getAnalysisAllRows();
  let cats=[...new Set(all.map(r=>(r.category||"").trim()||"未分类"))].sort((a,b)=>a.localeCompare(b,"zh"));
- let options=["Currency",...cats];
- if(!options.includes(categoryAnalysisCategory))categoryAnalysisCategory="Currency";
+ let options=["全部","Currency",...cats];
+ if(!options.includes(categoryAnalysisCategory))categoryAnalysisCategory="全部";
  let h=`<div class="analysisControls" style="grid-template-columns:1fr"><div><label>分类</label><select onchange="setAnalysisCategory(this.value)">${options.map(c=>`<option value="${esc(c)}" ${categoryAnalysisCategory===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div></div>`;
- if(categoryAnalysisCategory==="Currency"){
+ if(categoryAnalysisCategory==="全部"){
+   let totals=analysisTotalsByCurrency(all);
+   let currencies=Object.keys(totals).sort();
+   h+=`<div class="analysisSummary">${currencies.map(c=>{let v=totals[c],bal=v.income-v.expense;return `<div><small>${c} 余额</small><b style="font-size:25px">${money(bal,c)}</b><div style="font-size:13px;color:#8a7063;margin-top:6px">收入 ${money(v.income,c)}　·　支出 ${money(v.expense,c)}</div></div>`}).join("")}</div>`;
+   h+=`<h3 style="margin:12px 0 8px">全部详细资料</h3>${analysisRowsTable(all)}`;
+ }else if(categoryAnalysisCategory==="Currency"){
    let totals=analysisTotalsByCurrency(all);
    let currencies=Object.keys(totals).sort();
    h+=`<div class="analysisSummary">${currencies.map(c=>{let v=totals[c],bal=v.income-v.expense;return `<div><small>${c} 余额</small><b style="font-size:25px">${money(bal,c)}</b><div style="font-size:13px;color:#8a7063;margin-top:6px">收入 ${money(v.income,c)}　·　支出 ${money(v.expense,c)}</div></div>`}).join("")}</div>`;
