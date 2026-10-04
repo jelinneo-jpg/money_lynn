@@ -608,9 +608,12 @@ function openStats(){
    <div class="stat"><small>总支出</small><b class="expense">${multi(all,"expense")}</b></div>
  </div><h3>每月收入 / 支出</h3>`;
  h+=months.length?months.map(m=>`<div class="stats-month" style="cursor:pointer" onclick="showMonthDetail('${m}')">
-   <div class="stats-month-title" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-     <span>${m.slice(0,4)}年${Number(m.slice(5,7))}月</span>
-     <span style="font-size:13px;color:#987d70">查看明细 ›</span>
+   <div class="stats-month-title" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+     <div style="min-width:0">
+       <div>${m.slice(0,4)}年${Number(m.slice(5,7))}月</div>
+       <div style="font-size:12px;font-weight:600;color:#987d70;margin-top:4px;line-height:1.35;white-space:normal">当月余额：${multibal(monthly[m])}</div>
+     </div>
+     <span style="font-size:13px;color:#987d70;white-space:nowrap;padding-top:2px">查看明细 ›</span>
    </div>
    <div class="stats-values">
      <div>收入<br><span class="income">${multi(monthly[m],"income")}</span></div>
