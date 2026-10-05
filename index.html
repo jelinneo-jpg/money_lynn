@@ -79,6 +79,7 @@ body.modal-lock .accountWrap{visibility:hidden}
 .accountWrap .editAccount,.accountWrap .removeAccount{display:none!important}
 .accountActions{position:fixed;z-index:9999;min-width:155px;background:#fffaf6;border:1px solid #edd3c4;border-radius:16px;padding:7px;box-shadow:0 12px 30px #5b38252b;display:none}
 .accountActions.show{display:block}
+.accountActions{max-height:calc(100dvh - 24px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .accountActions button{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:11px;font-size:15px;font-weight:400;color:#49342b;font-family:inherit}
 .accountActions button:active{background:#f9e9df}
 .iconPickerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px;max-height:54vh;overflow:auto;padding:2px}
@@ -176,6 +177,11 @@ html,body{overscroll-behavior-y:none;}
     flex:none!important;
   }
   .appHeaderSettings{margin-top:5px!important;}
+}
+
+/* 2026-10-05 设置按钮下移 */
+@media(max-width:650px){
+  .appHeaderSettings{transform:translateY(28px)!important;}
 }
 </style></head>
 <body>
@@ -400,9 +406,21 @@ function removeAccount(i){
  if(current===n)current=names[0]||"";render();
 }
 function openAccountMenu(i,btn){
- menuAccountIndex=i; const m=document.getElementById("accountActions");
- const r=btn.getBoundingClientRect(); m.style.top=(r.bottom+6)+"px";
- m.style.left=Math.max(10,Math.min(window.innerWidth-165,r.right-155))+"px"; m.classList.add("show");
+ menuAccountIndex=i;
+ const m=document.getElementById("accountActions");
+ const r=btn.getBoundingClientRect();
+ m.classList.add("show");
+ // 先显示再量尺寸；靠近屏幕底部时自动往上弹，确保“删除账户”也看得到
+ const menuH=m.offsetHeight;
+ const vv=window.visualViewport;
+ const viewTop=vv ? vv.offsetTop : 0;
+ const viewH=vv ? vv.height : window.innerHeight;
+ const viewBottom=viewTop+viewH;
+ let top=r.bottom+6;
+ if(top+menuH>viewBottom-12) top=r.top-menuH-6;
+ top=Math.max(viewTop+12,Math.min(top,viewBottom-menuH-12));
+ m.style.top=top+"px";
+ m.style.left=Math.max(10,Math.min(window.innerWidth-165,r.right-155))+"px";
 }
 function closeAccountMenu(){document.getElementById("accountActions").classList.remove("show")}
 function moveAccount(from,to){
