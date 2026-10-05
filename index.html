@@ -195,6 +195,20 @@ html,body{overscroll-behavior-y:none;}
 .accountWrap.arrangeMode .account{cursor:default}
 .accountWrap.dragging{opacity:.62;transform:scale(.98)}
 @media(max-width:650px){.accountHomeToolbar{gap:7px}.arrangeBtn{padding:9px 10px}.accountHomeToolbar .btn{padding:10px 12px}}
+
+/* 2026-10-05 账户卡片：图标与名称同排，字体缩小 */
+.accountTopRow{display:flex;align-items:center;gap:8px;padding-right:32px;min-width:0}
+.accountTopRow .icon{font-size:0;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.accountTopRow .icon img{width:34px!important;height:34px!important}
+.accountTopRow .name{margin-top:0;font-size:14px;line-height:1.25;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account .abal{margin-top:8px;font-size:13px;line-height:1.45}
+@media(max-width:650px){
+  .account{padding:14px 13px}
+  .accountTopRow{gap:7px}
+  .accountTopRow .icon img{width:32px!important;height:32px!important}
+  .accountTopRow .name{font-size:13px}
+  .account .abal{font-size:12px;margin-top:7px}
+}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -316,7 +330,7 @@ function multi(t,kind){let a=Object.entries(t).filter(([c,v])=>v[kind]!==0).map(
 function multibal(t){let a=Object.entries(t).filter(([c,v])=>v.income-v.expense!==0).map(([c,v])=>money(v.income-v.expense,c));return a.length?a.join(" / "):money(0,"MYR")}
 function render(){
  let now=new Date(); let ml=document.getElementById("currentMonthLabel"); if(ml)ml.textContent="📅 "+now.getFullYear()+"年"+(now.getMonth()+1)+"月记录";
- document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap ${arrangeMode?'arrangeMode':''}" data-account-index="${i}"><button class="accountMenuBtn" onclick="event.stopPropagation();openAccountMenu(${i},this)">⋯</button><div class="dragHandle" aria-label="拖动排列" title="按住拖动">☰</div><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="if(!arrangeMode)pick(${i})"><div class=icon>${iconHTML(icons[i]||"card")}</div><div class=name>${esc(n)}</div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
+ document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap ${arrangeMode?'arrangeMode':''}" data-account-index="${i}"><button class="accountMenuBtn" onclick="event.stopPropagation();openAccountMenu(${i},this)">⋯</button><div class="dragHandle" aria-label="拖动排列" title="按住拖动">☰</div><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="if(!arrangeMode)pick(${i})"><div class="accountTopRow"><div class=icon>${iconHTML(icons[i]||"card")}</div><div class=name>${esc(n)}</div></div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
  if(!current || !names.length){
  title.textContent="还没有账户"; income.textContent=money(0,"MYR"); expense.textContent=money(0,"MYR"); balance.textContent=money(0,"MYR");
  list.innerHTML='<div class=empty>请先点击「＋ 新增账户」</div>';
