@@ -183,6 +183,18 @@ html,body{overscroll-behavior-y:none;}
 @media(max-width:650px){
   .appHeaderSettings{transform:translateY(28px)!important;}
 }
+
+/* 2026-10-05 账户拖动排列模式 */
+.accountHomeToolbar{display:flex;align-items:center;gap:9px}
+.accountHomeToolbar>div:first-child{margin-right:auto}
+.arrangeBtn{border:1px solid #e9c9b7;background:#fff8f3;color:#795b4e;border-radius:12px;padding:10px 12px;font-size:14px;cursor:pointer;white-space:nowrap}
+.arrangeBtn.on{background:#E9A47D;color:#fff;border-color:#E9A47D}
+.accountWrap.arrangeMode .accountMenuBtn{display:none}
+.dragHandle{display:none;position:absolute;right:12px;top:12px;z-index:5;border:0;width:34px;height:34px;border-radius:50%;background:#fffaf6;color:#6b4a3d;font-size:20px;line-height:34px;text-align:center;box-shadow:0 3px 12px #0000000a;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.accountWrap.arrangeMode .dragHandle{display:block}
+.accountWrap.arrangeMode .account{cursor:default}
+.accountWrap.dragging{opacity:.62;transform:scale(.98)}
+@media(max-width:650px){.accountHomeToolbar{gap:7px}.arrangeBtn{padding:9px 10px}.accountHomeToolbar .btn{padding:10px 12px}}
 </style></head>
 <body>
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fffaf7">
@@ -214,6 +226,7 @@ html,body{overscroll-behavior-y:none;}
 </div>
 <div id="accountHome"><div class="toolbar accountHomeToolbar">
 <div><b>我的账户</b></div>
+<button id="arrangeAccountsBtn" class="arrangeBtn" onclick="toggleArrangeMode()">⇅ 排列</button>
 <button class="btn" onclick="addAccount()">＋ 新增账户</button>
 </div>
 <div class="grid" id="accounts"></div></div>
@@ -272,8 +285,6 @@ html,body{overscroll-behavior-y:none;}
 </div>
 </div></div>
 <div id="accountActions" class="accountActions">
-<button onclick="actionMoveUp()">↑ 上移</button>
-<button onclick="actionMoveDown()">↓ 下移</button>
 <button onclick="actionEdit()">✎ 编辑账户</button>
 <button onclick="actionDelete()">🗑 删除账户</button>
 </div>
@@ -305,7 +316,7 @@ function multi(t,kind){let a=Object.entries(t).filter(([c,v])=>v[kind]!==0).map(
 function multibal(t){let a=Object.entries(t).filter(([c,v])=>v.income-v.expense!==0).map(([c,v])=>money(v.income-v.expense,c));return a.length?a.join(" / "):money(0,"MYR")}
 function render(){
  let now=new Date(); let ml=document.getElementById("currentMonthLabel"); if(ml)ml.textContent="📅 "+now.getFullYear()+"年"+(now.getMonth()+1)+"月记录";
- document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap"><button class="accountMenuBtn" onclick="event.stopPropagation();openAccountMenu(${i},this)">⋯</button><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="pick(${i})"><div class=icon>${iconHTML(icons[i]||"card")}</div><div class=name>${esc(n)}</div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
+ document.getElementById("accounts").innerHTML=names.map((n,i)=>{let t=totals(n);return `<div class="accountWrap ${arrangeMode?'arrangeMode':''}" data-account-index="${i}"><button class="accountMenuBtn" onclick="event.stopPropagation();openAccountMenu(${i},this)">⋯</button><div class="dragHandle" aria-label="拖动排列" title="按住拖动">☰</div><button style="width:100%;height:100%" class="account ${n==current?'active':''}" onclick="if(!arrangeMode)pick(${i})"><div class=icon>${iconHTML(icons[i]||"card")}</div><div class=name>${esc(n)}</div><div class=abal>余额：${multibal(t)}</div></button></div>`}).join("");
  if(!current || !names.length){
  title.textContent="还没有账户"; income.textContent=money(0,"MYR"); expense.textContent=money(0,"MYR"); balance.textContent=money(0,"MYR");
  list.innerHTML='<div class=empty>请先点击「＋ 新增账户」</div>';
@@ -405,6 +416,55 @@ function removeAccount(i){
  delete data[n];names.splice(i,1);icons.splice(i,1);
  if(current===n)current=names[0]||"";render();
 }
+let arrangeMode=false;
+function toggleArrangeMode(){
+ arrangeMode=!arrangeMode;
+ closeAccountMenu();
+ const b=document.getElementById("arrangeAccountsBtn");
+ if(b){b.textContent=arrangeMode?"✓ 完成":"⇅ 排列";b.classList.toggle("on",arrangeMode)}
+ render();
+}
+function commitAccountDomOrder(){
+ const els=[...document.querySelectorAll("#accounts .accountWrap")];
+ const oldNames=[...names], oldIcons=[...icons];
+ const order=els.map(el=>Number(el.dataset.accountIndex));
+ names=order.map(i=>oldNames[i]);
+ icons=order.map(i=>oldIcons[i]);
+ localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));
+ localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
+ render();
+}
+(function setupAccountDrag(){
+ let dragged=null, pointerId=null;
+ document.addEventListener("pointerdown",e=>{
+   const h=e.target.closest(".dragHandle");
+   if(!arrangeMode||!h)return;
+   e.preventDefault();
+   dragged=h.closest(".accountWrap"); pointerId=e.pointerId;
+   dragged.classList.add("dragging");
+   try{h.setPointerCapture(pointerId)}catch(_){}
+ });
+ document.addEventListener("pointermove",e=>{
+   if(!dragged||e.pointerId!==pointerId)return;
+   e.preventDefault();
+   const grid=document.getElementById("accounts");
+   const others=[...grid.querySelectorAll(".accountWrap:not(.dragging)")];
+   if(!others.length)return;
+   let best=null,dist=Infinity;
+   for(const el of others){const r=el.getBoundingClientRect();const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),d=dx*dx+dy*dy;if(d<dist){dist=d;best=el}}
+   if(!best)return;
+   const r=best.getBoundingClientRect();
+   const before=(e.clientY<r.top+r.height/2)||(Math.abs(e.clientY-(r.top+r.height/2))<r.height*.28&&e.clientX<r.left+r.width/2);
+   grid.insertBefore(dragged,before?best:best.nextSibling);
+ },{passive:false});
+ function finish(e){
+   if(!dragged||(e&&e.pointerId!==pointerId))return;
+   dragged.classList.remove("dragging"); dragged=null; pointerId=null;
+   commitAccountDomOrder();
+ }
+ document.addEventListener("pointerup",finish);
+ document.addEventListener("pointercancel",finish);
+})();
 function openAccountMenu(i,btn){
  menuAccountIndex=i;
  const m=document.getElementById("accountActions");
