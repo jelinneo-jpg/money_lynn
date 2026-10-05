@@ -266,6 +266,8 @@ html,body{overscroll-behavior-y:none;}
 </div>
 </div></div>
 <div id="accountActions" class="accountActions">
+<button onclick="actionMoveUp()">↑ 上移</button>
+<button onclick="actionMoveDown()">↓ 下移</button>
 <button onclick="actionEdit()">✎ 编辑账户</button>
 <button onclick="actionDelete()">🗑 删除账户</button>
 </div>
@@ -403,6 +405,16 @@ function openAccountMenu(i,btn){
  m.style.left=Math.max(10,Math.min(window.innerWidth-165,r.right-155))+"px"; m.classList.add("show");
 }
 function closeAccountMenu(){document.getElementById("accountActions").classList.remove("show")}
+function moveAccount(from,to){
+ if(from<0||to<0||from>=names.length||to>=names.length||from===to)return;
+ [names[from],names[to]]=[names[to],names[from]];
+ [icons[from],icons[to]]=[icons[to],icons[from]];
+ localStorage.setItem("zhLedgerAccounts",JSON.stringify(names));
+ localStorage.setItem("zhLedgerIcons",JSON.stringify(icons));
+ render();
+}
+function actionMoveUp(){let i=menuAccountIndex;closeAccountMenu();if(i<=0){alert("已经是第一张卡片了");return}moveAccount(i,i-1)}
+function actionMoveDown(){let i=menuAccountIndex;closeAccountMenu();if(i<0||i>=names.length-1){alert("已经是最后一张卡片了");return}moveAccount(i,i+1)}
 function actionEdit(){let i=menuAccountIndex;closeAccountMenu();editAccount(i)}
 function actionDelete(){let i=menuAccountIndex;closeAccountMenu();removeAccount(i)}
 document.addEventListener("click",e=>{if(!e.target.closest(".accountActions")&&!e.target.closest(".accountMenuBtn"))closeAccountMenu()});
